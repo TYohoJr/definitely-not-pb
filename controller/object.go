@@ -90,42 +90,35 @@ func (s *Server) ObjectRouter(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Object deleted"))
 		return
 	case "POST":
-		// Retrieve bucket and object from variables in URL
 		bucketName := chi.URLParam(r, "bucketName")
 		objKey := chi.URLParam(r, "objKey")
-		// Undo the escaping that can occur when a URL contains special characters
 		bucketName, err := url.QueryUnescape(bucketName)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		// Undo the escaping that can occur when a URL contains special characters
 		objKey, err = url.QueryUnescape(objKey)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 		defer r.Body.Close()
-		// Create a local file to store the uploaded file
 		outputFile, err := os.Create(objKey)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 		defer outputFile.Close()
-		// Copy the contents of the uploaded file to the local file
 		_, err = io.Copy(outputFile, r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		// Call internal method to upload the file to the specified S3 bucket
 		err = s.uploadObject(bucketName, objKey, objKey)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		// Return a succes response to the client
 		w.WriteHeader(201)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte("Object deleted"))
@@ -198,31 +191,25 @@ func (s *Server) deleteObject(bucketName string, objKey string) error {
 }
 
 func (s *Server) uploadObject(bucketName string, objKey string, filename string) error {
-	// Create new session that can use to authenticate to AWS
-	// Will use the credential environment variables that were previously loaded from .env
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create new AWS session: %v", err)
 	}
-	// Open the local file so the contents can be sent
 	file, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("failed to open temp file: %v", err)
 	}
 	svc := s3.New(sess)
-	// Define the object that should be uploaded
 	input := &s3.PutObjectInput{
-		Body:   file,                   // Contents of the file
-		Bucket: aws.String(bucketName), // Bucket the file should be located in
-		Key:    aws.String(objKey),     // Name of the file
+		Body:   file,
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objKey),
 	}
-	// Make call to AWS to upload the file
 	_, err = svc.PutObject(input)
 	if err != nil {
 		return fmt.Errorf("failed to call AWS api to PutObject: %v", err)
 	}
-	// If there is no error from the AWS call then the upload was successful
 	return nil
 }

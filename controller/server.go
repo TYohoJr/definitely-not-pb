@@ -26,16 +26,13 @@ func NewServer() *Server {
 }
 
 func (s *Server) Initialize() {
-	// Default to use JSON as content type
 	s.Router.Use(render.SetContentType(render.ContentTypeJSON))
 	s.initializeRoutes()
 	fmt.Println("Backend successfully initialized and listening")
-	// Start listening for requests from clients
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", serverPort), s.Router))
 }
 
 func (s *Server) initializeRoutes() {
-	// Create backend endpoints for the frontend to consume
 	s.Router.Route("/api/buckets", func(r chi.Router) {
 		r.Get("/", s.BucketsRouter)
 	})
