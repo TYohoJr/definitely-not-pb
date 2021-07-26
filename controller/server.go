@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"defnotpb/model"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 )
@@ -15,11 +17,14 @@ const (
 )
 
 type Server struct {
+	DB     *model.DB
 	Router chi.Router
 }
 
-func NewServer() *Server {
-	s := Server{}
+func NewServer(db *model.DB) *Server {
+	s := Server{
+		DB: db,
+	}
 	r := chi.NewRouter()
 	s.Router = r
 	return &s
@@ -33,19 +38,7 @@ func (s *Server) Initialize() {
 }
 
 func (s *Server) initializeRoutes() {
-	s.Router.Route("/api/buckets", func(r chi.Router) {
-		r.Get("/", s.BucketsRouter)
-	})
-	s.Router.Route("/api/objects", func(r chi.Router) {
-		r.Route("/bucket/{bucketName}", func(r chi.Router) {
-			r.Get("/", s.ObjectsRouter)
-			r.Post("/", s.BucketsRouter)
-			r.Delete("/", s.BucketsRouter)
-			r.Route("/key/{objKey}", func(r chi.Router) {
-				r.Delete("/", s.ObjectRouter)
-				r.Get("/", s.ObjectRouter)
-				r.Post("/", s.ObjectRouter)
-			})
-		})
+	s.Router.Route("/api/secret_question", func(r chi.Router) {
+		r.Get("/", s.SecretQuestionRouter)
 	})
 }
