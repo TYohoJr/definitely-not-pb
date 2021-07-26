@@ -16,19 +16,16 @@ import (
 func (s *Server) BucketsRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		// Call internal method to retrieve list of buckets
 		resp, err := s.getAllBuckets()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		// Convert Go code list of buckets to JSON that the client/frontend can use
 		respJSON, err := json.Marshal(resp)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		// Return the result to the client
 		w.WriteHeader(200)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(respJSON)
@@ -68,24 +65,19 @@ func (s *Server) BucketsRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getAllBuckets() ([]model.Bucket, error) {
-	// Create new session that can use to authenticate to AWS
-	// Will use the credential environment variables that were previously loaded from .env
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new AWS session: %v", err)
 	}
-	// Create an object that defines info needed to make call to AWS
 	input := &s3.ListBucketsInput{}
 	svc := s3.New(sess)
-	// Make a call to AWS to get a list of all available buckets in S3 for authenticated user
 	result, err := svc.ListBuckets(input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call AWS api to ListBuckets: %v", err)
 	}
 	output := []model.Bucket{}
-	// Loop through each bucket and convert it from an AWS model to a model defined by the application
 	for _, b := range result.Buckets {
 		bckt := model.Bucket{
 			Name: b.Name,
