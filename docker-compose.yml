@@ -12,6 +12,7 @@ services:
     build:
       context: .
       dockerfile: resources/docker/Dockerfile.app
+    command: ["/bin/bash", "-c", "go run main.go"]
     links:
       - "db:db"
     expose:

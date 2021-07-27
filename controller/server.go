@@ -38,7 +38,16 @@ func (s *Server) Initialize() {
 }
 
 func (s *Server) initializeRoutes() {
+	s.Router.Route("/api/login", func(r chi.Router) {
+		r.Post("/", s.LoginRouter)
+	})
 	s.Router.Route("/api/secret_question", func(r chi.Router) {
 		r.Get("/", s.SecretQuestionRouter)
+	})
+	s.Router.Route("/api/user", func(r chi.Router) {
+		r.Post("/", s.UserRouter)
+		r.Route("/{username}", func(r chi.Router) {
+			r.Get("/", s.UserRouter)
+		})
 	})
 }

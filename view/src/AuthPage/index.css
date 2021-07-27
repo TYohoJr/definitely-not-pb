@@ -1,0 +1,16 @@
+.req-not-met {
+    color: red;
+}
+
+.req-met {
+    color: green;
+}
+
+.auth-form-container {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.pass-req-list {
+    list-style-type: none;
+}
