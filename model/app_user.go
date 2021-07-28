@@ -51,6 +51,21 @@ func (db *DB) GetAppUserByUsername(username string) (*AppUser, error) {
 	return &users[0], nil
 }
 
+func (db *DB) GetAppUserByID(userID int) (*AppUser, error) {
+	users := []AppUser{}
+	err := db.Select(&users,
+		`SELECT *
+		FROM app_user
+		WHERE id=$1`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get app_user by id from db: %v", err)
+	}
+	if len(users) < 1 {
+		return nil, nil
+	}
+	return &users[0], nil
+}
+
 func (db *DB) CreateUser(u *AppUser) error {
 	hashedPassword, err := u.Hash(*u.Password)
 	if err != nil {

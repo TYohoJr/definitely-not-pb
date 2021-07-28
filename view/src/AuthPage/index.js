@@ -50,7 +50,7 @@ class AuthPage extends Component {
                     this.setState({ loginError: respJSON.error_message })
                 } else {
                     this.setState({ loginError: "" })
-                    this.props.setLoggedIn()
+                    this.props.setLoggedIn(respJSON.app_user_id)
                 }
             }
         })
@@ -120,13 +120,13 @@ class AuthPage extends Component {
     handleNewPasswordChange = (e) => {
         this.setState({ newPassword: e.target.value }, () => {
             // Lowercase check
-            if (this.state.newPassword.toLowerCase() == this.state.newPassword) {
+            if (this.state.newPassword.toLowerCase() === this.state.newPassword) {
                 this.setState({ isLowercasePassword: false })
             } else {
                 this.setState({ isLowercasePassword: true })
             }
             // Uppercase check
-            if (this.state.newPassword.toUpperCase() == this.state.newPassword) {
+            if (this.state.newPassword.toUpperCase() === this.state.newPassword) {
                 this.setState({ isUppercasePassword: false })
             } else {
                 this.setState({ isUppercasePassword: true })
