@@ -30,6 +30,30 @@ class AuthPage extends Component {
         this.getSecretQuestions()
     }
 
+    componentWillUnmount() {
+        this.resetAuthPage()
+    }
+
+    resetAuthPage = () => {
+        this.setState({
+            username: "",
+            password: "",
+            newUsername: "",
+            newPassword: "",
+            newPasswordReEnter: "",
+            isRegistering: false,
+            isLowercasePassword: false,
+            isUppercasePassword: false,
+            isNumberPassword: false,
+            passwordsMatch: false,
+            isValidUsername: true,
+            secretQuestionPickID: null,
+            secretQuestionPickText: "Select Question",
+            secretQuestionAnswer: "",
+            loginError: "",
+        })
+    }
+
     logIn = async (username, password) => {
         let loginData = {
             username: username,
@@ -174,7 +198,7 @@ class AuthPage extends Component {
                 if (respJSON.is_error) {
                     console.error(respJSON.error_message)
                 } else {
-                    this.setState({ username: "", password: "", isRegistering: false })
+                    this.resetAuthPage()
                 }
             }
         })
@@ -318,7 +342,7 @@ class AuthPage extends Component {
                             <Button
                                 variant="secondary"
                                 type="button"
-                                onClick={() => this.setState({ isRegistering: false })}
+                                onClick={this.resetAuthPage}
                             >
                                 Return To Login
                             </Button>

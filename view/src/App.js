@@ -22,6 +22,16 @@ class App extends Component {
     this.setState({ appUserID: userID, isLoggedIn: true })
   }
 
+  setLoggedOut = async () => {
+    this.setState({
+      appUserID: 0,
+      isLoggedIn: false,
+      albums: [],
+      showAlbumsPage: false,
+      showPhotosPage: false,
+    })
+  }
+
   showAlbumsPage = async () => {
     this.setState({ showAlbumsPage: true })
   }
@@ -36,21 +46,27 @@ class App extends Component {
 
   getAlbums = async () => {
     await fetch("/api/album/user/" + encodeURIComponent(this.state.appUserID), {
-        method: "GET",
-        headers: {
-            "content-type": "application/json",
-        }
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+      }
     }).then(async (resp) => {
-        if (resp.status !== 200) {
-            console.error("bad response code: ", resp.status)
-        } else {
-            let respJSON = await resp.json();
-            this.setState({ albums: respJSON })
-        }
+      if (resp.status !== 200) {
+        console.error("bad response code: ", resp.status)
+      } else {
+        let respJSON = await resp.json();
+        this.setState({ albums: respJSON })
+      }
     })
-}
+  }
 
   render() {
+    let vw = window.innerWidth * 0.01;
+    document.documentElement.style.setProperty('--vw', `${vw}px`);
+    window.addEventListener('resize', () => {
+      let vw = window.innerWidth * 0.01;
+      document.documentElement.style.setProperty('--vw', `${vw}px`);
+    });
     return (
       <div className="App">
         {this.state.isLoggedIn && !this.state.showAlbumsPage && !this.state.showPhotosPage ?
@@ -76,6 +92,7 @@ class App extends Component {
             goBackToHomePage={this.goBackToHomePage}
             albums={this.state.albums}
             getAlbums={this.getAlbums}
+            logOut={this.setLoggedOut}
           />
           :
           null
@@ -85,6 +102,7 @@ class App extends Component {
             appUserID={this.state.appUserID}
             goBackToHomePage={this.goBackToHomePage}
             albums={this.state.albums}
+            logOut={this.setLoggedOut}
           />
           :
           null

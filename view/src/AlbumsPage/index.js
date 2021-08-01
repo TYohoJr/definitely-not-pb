@@ -1,42 +1,28 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
+import ImageGallery from 'react-image-gallery';
+import "react-image-gallery/styles/css/image-gallery.css";
+import "./index.css";
 
 class AlbumsPage extends Component {
     constructor(props) {
         super(props)
+        this.imageGalleryRef = React.createRef();
         this.state = {
-            albums: [],
             newAlbumName: "",
             isValidAlbumName: true,
             isCreatingNewAlbum: false,
-            showUpload: false,
-            selectedFile: null,
-            selectedAlbumID: 0,
+            isDisplayingAlbum: false,
+            albumGalleryImages: [],
+            isGalleryLoaded: false,
         }
     }
 
     componentDidMount() {
         this.props.getAlbums()
     }
-
-    // getAlbums = async () => {
-    //     await fetch("/api/album/user/" + encodeURIComponent(this.props.appUserID), {
-    //         method: "GET",
-    //         headers: {
-    //             "content-type": "application/json",
-    //         }
-    //     }).then(async (resp) => {
-    //         if (resp.status !== 200) {
-    //             console.error("bad response code: ", resp.status)
-    //         } else {
-    //             let respJSON = await resp.json();
-    //             console.log(respJSON)
-    //             this.setState({ albums: respJSON })
-    //         }
-    //     })
-    // }
 
     deleteAlbum = async (albumID) => {
         await fetch("/api/album/id/" + encodeURIComponent(albumID), {
@@ -54,20 +40,44 @@ class AlbumsPage extends Component {
     }
 
     openAlbum = async (albumID) => {
-        // await fetch("/api/album/user/" + encodeURIComponent(this.props.appUserID), {
-        //     method: "GET",
-        //     headers: {
-        //         "content-type": "application/json",
-        //     }
-        // }).then(async (resp) => {
-        //     if (resp.status !== 200) {
-        //         console.error("bad response code: ", resp.status)
-        //     } else {
-        //         let respJSON = await resp.json();
-        //         console.log(respJSON)
-        //         this.setState({ albums: respJSON })
-        //     }
-        // })
+        await fetch("/api/album_photo/album/" + encodeURIComponent(albumID), {
+            method: "GET",
+            headers: {
+                "content-type": "application/json",
+            }
+        }).then(async (resp) => {
+            if (resp.status !== 200) {
+                console.error("bad response code: ", resp.status)
+            } else {
+                let respJSON = await resp.json();
+                for (let i = 0; i < respJSON.length; i++) {
+                    await this.addPhotoToAlbum(respJSON[i].photo_id)
+                }
+                this.setState({ isDisplayingAlbum: true })
+            }
+        });
+    }
+
+    addPhotoToAlbum = async (photoID) => {
+        await fetch("/api/photo/id/" + encodeURIComponent(photoID), {
+            method: "GET",
+            headers: {
+                "content-type": "application/json",
+            }
+        }).then(async (resp) => {
+            if (resp.status !== 200) {
+                console.error("bad response code: ", resp.status)
+            } else {
+                let respJSON = await resp.json();
+                let images = this.state.albumGalleryImages
+                images.push({
+                    original: respJSON,
+                });
+                this.setState({ albumGalleryImages: images }, () => {
+                    return
+                });
+            }
+        });
     }
 
     createAlbum = async () => {
@@ -120,6 +130,20 @@ class AlbumsPage extends Component {
             }
 
         })
+    }
+
+    onImageLoad = (e) => {
+        if (!this.state.isGalleryLoaded) {
+            this.setState({ isGalleryLoaded: true }, () => {
+                this.imageGalleryRef.current.fullScreen()
+            });
+        }
+    }
+
+    onScreenChange = (isFullScreen) => {
+        if (!isFullScreen) {
+            this.setState({ isGalleryLoaded: false, isDisplayingAlbum: false });
+        }
     }
 
     render() {
@@ -214,6 +238,20 @@ class AlbumsPage extends Component {
                         </Button>
                     </div>
                 }
+                {this.state.isDisplayingAlbum ?
+                    <ImageGallery
+                        items={this.state.albumGalleryImages}
+                        showThumbnails={false}
+                        showPlayButton={false}
+                        onImageLoad={this.onImageLoad}
+                        ref={this.imageGalleryRef}
+                        onScreenChange={this.onScreenChange}
+                        useTranslate3D={false}
+                    />
+                    :
+                    null
+                }
+
             </div>
         )
     }
