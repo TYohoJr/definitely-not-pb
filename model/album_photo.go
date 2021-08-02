@@ -46,3 +46,14 @@ func (db *DB) GetAlbumPhotosByPhotoID(photoID int) ([]AlbumPhoto, error) {
 	}
 	return albumPhotos, nil
 }
+
+func (db *DB) DeleteAlbumPhotoByID(albumPhotoID int) error {
+	_, err := db.Exec(
+		`DELETE
+		FROM album_photo
+		WHERE id=$1`, albumPhotoID)
+	if err != nil {
+		return fmt.Errorf("failed to delete album_photo from db by id: %v", err)
+	}
+	return nil
+}

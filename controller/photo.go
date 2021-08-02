@@ -190,7 +190,36 @@ func (s *Server) handleGetPhotoByID(photoID int) (*string, error) {
 }
 
 func (s *Server) handleDeletePhotoByID(photoID int) error {
-	err := s.DB.DeletePhotoByID(photoID)
+	albumPhotos, err := s.DB.GetAlbumPhotosByPhotoID(photoID)
+	if err != nil {
+		return err
+	}
+	for _, ap := range albumPhotos {
+		err = s.DB.DeleteAlbumPhotoByID(*ap.ID)
+		if err != nil {
+			return err
+		}
+	}
+	photo, err := s.DB.GetPhotoByID(photoID)
+	if err != nil {
+		return err
+	}
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create new AWS session: %v", err)
+	}
+	svc := s3.New(sess)
+	input := &s3.DeleteObjectInput{
+		Bucket: aws.String(*photo.S3Bucket),
+		Key:    aws.String(*photo.S3Key),
+	}
+	_, err = svc.DeleteObject(input)
+	if err != nil {
+		return fmt.Errorf("failed to call AWS api to DeleteObject: %v", err)
+	}
+	err = s.DB.DeletePhotoByID(photoID)
 	if err != nil {
 		return err
 	}
