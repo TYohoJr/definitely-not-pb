@@ -34,3 +34,15 @@ func (db *DB) GetAlbumPhotosByAlbumID(albumID int) ([]AlbumPhoto, error) {
 	}
 	return albumPhotos, nil
 }
+
+func (db *DB) GetAlbumPhotosByPhotoID(photoID int) ([]AlbumPhoto, error) {
+	albumPhotos := []AlbumPhoto{}
+	err := db.Select(&albumPhotos,
+		`SELECT *
+		FROM album_photo
+		WHERE photo_id=$1`, photoID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get album_photos by photo_id from db: %v", err)
+	}
+	return albumPhotos, nil
+}

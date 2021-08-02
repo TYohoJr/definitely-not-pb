@@ -20,7 +20,7 @@ import (
 
 func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "GET":
+	case "GET": // Get a URL to a photo by photo_id
 		photoIDStr := chi.URLParam(r, "photoID")
 		photoIDStr, err := url.QueryUnescape(photoIDStr)
 		if err != nil {
@@ -46,7 +46,7 @@ func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(respJSON)
 		return
-	case "POST":
+	case "POST": // Create copy of a new photo to server
 		fileName := chi.URLParam(r, "fileName")
 		fileName, err := url.QueryUnescape(fileName)
 		if err != nil {
@@ -68,7 +68,7 @@ func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(204)
 		w.Header().Set("Content-Type", "application/json")
 		return
-	case "PUT":
+	case "PUT": // Upload/Create new photo that was previously POSTed to server
 		createPhoto := model.Photo{}
 		err := json.NewDecoder(r.Body).Decode(&createPhoto)
 		if err != nil {
@@ -83,7 +83,7 @@ func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(204)
 		w.Header().Set("Content-Type", "application/json")
 		return
-	case "DELETE":
+	case "DELETE": // Delete a photo by photo_id
 		photoIDStr := chi.URLParam(r, "photoID")
 		photoIDStr, err := url.QueryUnescape(photoIDStr)
 		if err != nil {
@@ -108,7 +108,7 @@ func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) PhotoUserRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "GET":
+	case "GET": // Get a list of photos by user_id
 		userIDStr := chi.URLParam(r, "userID")
 		userIDStr, err := url.QueryUnescape(userIDStr)
 		if err != nil {

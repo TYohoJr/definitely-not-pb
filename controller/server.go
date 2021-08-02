@@ -75,6 +75,9 @@ func (s *Server) initializeRoutes() {
 				r.Get("/", s.AlbumCheckRouter)
 			})
 		})
+		r.Route("/photo/{photoID}", func(r chi.Router) {
+			r.Get("/", s.AlbumByPhotoRouter)
+		})
 	})
 	s.Router.Route("/api/album_photo", func(r chi.Router) {
 		r.Post("/", s.AlbumPhotoRouter)

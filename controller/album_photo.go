@@ -13,7 +13,7 @@ import (
 
 func (s *Server) AlbumPhotoRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "GET":
+	case "GET": // Get a list of album_photos by an album_id
 		albumIDStr := chi.URLParam(r, "albumID")
 		albumIDStr, err := url.QueryUnescape(albumIDStr)
 		if err != nil {
@@ -39,7 +39,7 @@ func (s *Server) AlbumPhotoRouter(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(respJSON)
 		return
-	case "POST":
+	case "POST": // Create an album_photo
 		createAlbumPhoto := model.AlbumPhoto{}
 		err := json.NewDecoder(r.Body).Decode(&createAlbumPhoto)
 		if err != nil {

@@ -17,18 +17,38 @@ class PhotosPage extends Component {
             selectedPhotoURL: "",
             photoToAddToAlbum: null,
             selectedAlbum: null,
+            selectedPhotoAlbumIDs: [],
             showChooseAlbum: false,
         }
     }
 
     componentDidMount() {
         this.getPhotos()
+        this.props.getAlbums()
     }
 
-    handleShowChooseAlbum = (photo) => {
-        this.setState({ photoToAddToAlbum: photo }, () => {
-            this.setState({ showChooseAlbum: true })
-        })
+    handleShowChooseAlbum = async (photo) => {
+        await fetch("/api/album/photo/" + encodeURIComponent(photo.id), {
+            method: "GET",
+            headers: {
+                "content-type": "application/json",
+            }
+        }).then(async (resp) => {
+            if (resp.status !== 200) {
+                console.error("bad response code: ", resp.status)
+            } else {
+                let respJSON = await resp.json();
+                let albumIDs = []
+                respJSON.forEach((album, i) => {
+                    albumIDs.push(album.id)
+                });
+                this.setState({ selectedPhotoAlbumIDs: albumIDs }, () => {
+                    this.setState({ photoToAddToAlbum: photo }, () => {
+                        this.setState({ showChooseAlbum: true })
+                    })
+                });
+            }
+        });
     }
 
     handleSelectedFileDescriptionChange = (e) => {
@@ -106,7 +126,9 @@ class PhotosPage extends Component {
             if (resp.status !== 201) {
                 console.error("bad response code: ", resp.status)
             } else {
-                this.setState({ showChooseAlbum: false })
+                this.setState({ showChooseAlbum: false }, () => {
+                    this.props.getAlbums()
+                })
             }
         });
     }
@@ -218,80 +240,98 @@ class PhotosPage extends Component {
                         )
                     })}
                 </Container>
-                <Modal
-                    show={this.state.showUpload}
-                    size="lg"
-                    aria-labelledby="contained-modal-title-vcenter"
-                    centered
-                >
-                    <Modal.Body>
-                        <Form.Group controlId="formFile" className="mb-3">
-                            <Form.Label
-                                className="upload-form-label"
-                            >Upload File</Form.Label>
-                            <Form.Control
-                                type="file"
-                                onChange={this.changeFile}
-                            />
-                            <Form.Label
-                                className="upload-form-label upload-form-description-label"
-                            >Short Description</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Short Description"
-                                onChange={(e) => this.handleSelectedFileDescriptionChange(e)}
-                                value={this.state.selectedFileDescription}
-                            />
-                        </Form.Group>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button onClick={() => this.uploadPhoto(this.state.selectedFile)}>Upload</Button>
-                        <Button onClick={() => this.setState({ showUpload: false })}>Cancel</Button>
-                    </Modal.Footer>
-                </Modal>
-                <Modal
-                    show={this.state.showChooseAlbum}
-                    size="lg"
-                    aria-labelledby="contained-modal-title-vcenter"
-                    centered
-                >
-                    <Modal.Body>
-                        <Form.Group controlId="formFile" className="mb-3">
-                            <Form.Label className="upload-form-label">Photo Name</Form.Label>
-                            <Form.Text>{this.state.photoToAddToAlbum ? this.state.photoToAddToAlbum.name : null}</Form.Text>
-                            <Form.Label className="upload-form-label">Choose Album</Form.Label>
-                            <Form.Control
-                                onChange={this.handleChooseAlbumChange}
-                                as="select"
-                            >
-                                <option disabled selected value="">Select Album</option>
-                                {this.props.albums.map((album, i) => {
-                                    return <option value={i}>{album.name}</option>
-                                })}
-                            </Form.Control>
-                        </Form.Group>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button onClick={() => this.addPhotoToAlbum()}>Add</Button>
-                        <Button onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseAlbum: false })}>Cancel</Button>
-                    </Modal.Footer>
-                </Modal>
-                <Modal
-                    show={this.state.showPicture}
-                    size="lg"
-                    aria-labelledby="contained-modal-title-vcenter"
-                    className="view-photo-modal"
-                    centered
-                >
-                    <Modal.Body>
-                        <div className="view-photo-container">
-                            <img className="view-photo-img" src={this.state.selectedPhotoURL} />
-                        </div>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button onClick={() => this.setState({ showPicture: false })}>Close</Button>
-                    </Modal.Footer>
-                </Modal>
+                {this.state.showUpload ?
+                    <Modal
+                        show={true}
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        centered
+                        backdrop="static"
+                    >
+                        <Modal.Body>
+                            <Form.Group controlId="formFile" className="mb-3">
+                                <Form.Label
+                                    className="upload-form-label"
+                                >Upload File</Form.Label>
+                                <Form.Control
+                                    type="file"
+                                    onChange={this.changeFile}
+                                />
+                                <Form.Label
+                                    className="upload-form-label upload-form-description-label"
+                                >Short Description</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Short Description"
+                                    onChange={(e) => this.handleSelectedFileDescriptionChange(e)}
+                                    value={this.state.selectedFileDescription}
+                                />
+                            </Form.Group>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="success" onClick={() => this.uploadPhoto(this.state.selectedFile)}>Upload</Button>
+                            <Button variant="danger" onClick={() => this.setState({ showUpload: false })}>Cancel</Button>
+                        </Modal.Footer>
+                    </Modal>
+                    :
+                    null
+                }
+                {this.state.showChooseAlbum ?
+                    <Modal
+                        show={true}
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        centered
+                        backdrop="static"
+                    >
+                        <Modal.Body>
+                            <Form.Group controlId="formFile" className="mb-3">
+                                <Form.Label className="upload-form-label">Photo Name</Form.Label>
+                                <Form.Text>{this.state.photoToAddToAlbum ? this.state.photoToAddToAlbum.name : null}</Form.Text>
+                                <Form.Label className="upload-form-label">Choose Album</Form.Label>
+                                <Form.Control
+                                    onChange={this.handleChooseAlbumChange}
+                                    as="select"
+                                >
+                                    <option disabled selected value="">Select Album</option>
+                                    {this.props.albums.map((album, i) => {
+                                        if (this.state.selectedPhotoAlbumIDs.indexOf(album.id) !== -1) {
+                                            return <option value={i} disabled>{album.name} - Already added</option>
+                                        } else {
+                                            return <option value={i}>{album.name}</option>
+                                        }
+                                    })}
+                                </Form.Control>
+                            </Form.Group>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button onClick={() => this.addPhotoToAlbum()}>Add</Button>
+                            <Button onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseAlbum: false })}>Cancel</Button>
+                        </Modal.Footer>
+                    </Modal>
+                    :
+                    null
+                }
+                {this.state.showPicture ?
+                    <Modal
+                        show={true}
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        className="view-photo-modal"
+                        centered
+                    >
+                        <Modal.Body>
+                            <div className="view-photo-container">
+                                <img className="view-photo-img" src={this.state.selectedPhotoURL} />
+                            </div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button onClick={() => this.setState({ showPicture: false })}>Close</Button>
+                        </Modal.Footer>
+                    </Modal>
+                    :
+                    null
+                }
             </div>
         )
     }

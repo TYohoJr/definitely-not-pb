@@ -57,3 +57,18 @@ func (db *DB) DeleteAlbumByID(albumID int) error {
 	}
 	return nil
 }
+
+func (db *DB) GetAlbumByID(albumID int) (*Album, error) {
+	albums := []Album{}
+	err := db.Select(&albums,
+		`SELECT *
+		FROM album
+		WHERE id=$1`, albumID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get album by id from db: %v", err)
+	}
+	if len(albums) < 1 {
+		return nil, nil
+	}
+	return &albums[0], nil
+}

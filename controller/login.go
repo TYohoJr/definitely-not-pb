@@ -15,7 +15,7 @@ type LoginResult struct {
 
 func (s *Server) LoginRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "POST":
+	case "POST": // Login to application
 		loginUser := model.AppUser{}
 		err := json.NewDecoder(r.Body).Decode(&loginUser)
 		if err != nil {

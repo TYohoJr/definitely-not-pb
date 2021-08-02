@@ -103,6 +103,7 @@ class App extends Component {
             goBackToHomePage={this.goBackToHomePage}
             albums={this.state.albums}
             logOut={this.setLoggedOut}
+            getAlbums={this.getAlbums}
           />
           :
           null
