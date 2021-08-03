@@ -3,6 +3,9 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import ImageGallery from 'react-image-gallery';
+import Spinner from 'react-bootstrap/Spinner';
+import Modal from 'react-bootstrap/Modal';
+import Container from 'react-bootstrap/Container';
 import "react-image-gallery/styles/css/image-gallery.css";
 import "./index.css";
 
@@ -17,6 +20,8 @@ class AlbumsPage extends Component {
             isDisplayingAlbum: false,
             albumGalleryImages: [],
             isGalleryLoaded: false,
+            isLoading: false,
+            isLoadingIndex: -1,
         }
     }
 
@@ -24,38 +29,48 @@ class AlbumsPage extends Component {
         this.props.getAlbums()
     }
 
-    deleteAlbum = async (albumID) => {
-        await fetch("/api/album/id/" + encodeURIComponent(albumID), {
-            method: "DELETE",
-            headers: {
-                "content-type": "application/json",
-            }
-        }).then(async (resp) => {
-            if (resp.status !== 204) {
-                console.error("bad response code: ", resp.status)
-            } else {
-                this.props.getAlbums()
-            }
+    deleteAlbum = async (albumID, i) => {
+        this.setState({ isLoading: true, isLoadingIndex: i }, async () => {
+            await fetch("/api/album/id/" + encodeURIComponent(albumID), {
+                method: "DELETE",
+                headers: {
+                    "content-type": "application/json",
+                }
+            }).then(async (resp) => {
+                if (resp.status !== 204) {
+                    console.error("bad response code: ", resp.status)
+                } else {
+                    this.props.getAlbums()
+                }
+            }).finally(() => {
+                this.setState({ isLoadingIndex: -1, isLoading: false });
+            });
         })
     }
 
-    openAlbum = async (albumID) => {
-        await fetch("/api/album_photo/album/" + encodeURIComponent(albumID), {
-            method: "GET",
-            headers: {
-                "content-type": "application/json",
-            }
-        }).then(async (resp) => {
-            if (resp.status !== 200) {
-                console.error("bad response code: ", resp.status)
-            } else {
-                let respJSON = await resp.json();
-                for (let i = 0; i < respJSON.length; i++) {
-                    await this.addPhotoToAlbum(respJSON[i].photo_id)
+    openAlbum = async (albumID, i) => {
+        this.setState({ isLoading: true, isLoadingIndex: i }, async () => {
+            await fetch("/api/album_photo/album/" + encodeURIComponent(albumID), {
+                method: "GET",
+                headers: {
+                    "content-type": "application/json",
                 }
-                this.setState({ isDisplayingAlbum: true })
-            }
-        });
+            }).then(async (resp) => {
+                if (resp.status !== 200) {
+                    console.error("bad response code: ", resp.status)
+                } else {
+                    let respJSON = await resp.json();
+                    if (respJSON.length > 0) {
+                        for (let i = 0; i < respJSON.length; i++) {
+                            await this.addPhotoToAlbum(respJSON[i].photo_id)
+                        }
+                        this.setState({ isDisplayingAlbum: true })
+                    }
+                }
+            }).finally(() => {
+                this.setState({ isLoadingIndex: -1, isLoading: false });
+            });
+        })
     }
 
     addPhotoToAlbum = async (photoID) => {
@@ -84,24 +99,28 @@ class AlbumsPage extends Component {
         if (!this.state.newAlbumName || !this.state.isValidAlbumName) {
             return
         }
-        let albumData = {
-            name: this.state.newAlbumName,
-            app_user_id: this.props.appUserID,
-        }
-        await fetch("/api/album", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify(albumData)
-        }).then(async (resp) => {
-            if (resp.status !== 201) {
-                console.error("bad response code: ", resp.status)
-            } else {
-                this.setState({ isCreatingNewAlbum: false, newAlbumName: "" }, () => {
-                    this.props.getAlbums()
-                })
+        this.setState({ isLoading: true }, async () => {
+            let albumData = {
+                name: this.state.newAlbumName,
+                app_user_id: this.props.appUserID,
             }
+            await fetch("/api/album", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify(albumData)
+            }).then(async (resp) => {
+                if (resp.status !== 201) {
+                    console.error("bad response code: ", resp.status)
+                } else {
+                    this.setState({ isCreatingNewAlbum: false, newAlbumName: "" }, () => {
+                        this.props.getAlbums()
+                    })
+                }
+            }).finally(() => {
+                this.setState({ isLoading: false });
+            });
         })
     }
 
@@ -142,45 +161,38 @@ class AlbumsPage extends Component {
 
     onScreenChange = (isFullScreen) => {
         if (!isFullScreen) {
-            this.setState({ isGalleryLoaded: false, isDisplayingAlbum: false });
+            this.setState({ isGalleryLoaded: false, isDisplayingAlbum: false, albumGalleryImages: [] });
         }
     }
 
     render() {
         return (
             <div>
-                {this.props.albums.map((album, i) => {
-                    return (
-                        <Card
-                            bg="Light"
-                            key={i}
-                            text="dark"
-                            style={{ width: '18rem' }}
-                            className="mb-2"
-                        >
-                            <Card.Body>
-                                <Card.Title>{album.name}</Card.Title>
-                                <Button
-                                    variant="primary"
-                                    type="button"
-                                    onClick={() => this.openAlbum(album.id)}
-                                >
-                                    Open
-                                </Button>
-                                <Button
-                                    variant="primary"
-                                    type="button"
-                                    onClick={() => this.deleteAlbum(album.id)}
-                                >
-                                    Delete
-                                </Button>
-                            </Card.Body>
-                        </Card>
-                    )
-                })}
+                <div class="top-btns-container">
+                    <Button
+                        variant="primary"
+                        type="button"
+                        onClick={() => this.setState({ isCreatingNewAlbum: true })}
+                    >
+                        Create New Album
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        type="button"
+                        onClick={this.props.goBackToHomePage}
+                    >
+                        Go Back Home
+                    </Button>
+                </div>
                 {this.state.isCreatingNewAlbum ?
-                    <div>
-                        <Form>
+                    <Modal
+                        show={true}
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        centered
+                        backdrop="static"
+                    >
+                        <Modal.Body>
                             <Form.Group className="mb-3" controlId="formBasicEmail">
                                 <Form.Label>Album Name</Form.Label>
                                 <Form.Control
@@ -204,40 +216,74 @@ class AlbumsPage extends Component {
                                     </ul>
                                 </Form.Text>
                             </Form.Group>
-                            <Button
-                                variant="secondary"
-                                type="button"
-                                onClick={() => this.setState({ newAlbumName: "", isCreatingNewAlbum: false })}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant="primary"
-                                type="button"
-                                onClick={this.createAlbum}
-                            >
-                                Create
-                            </Button>
-                        </Form>
-                    </div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            {this.state.isLoading ?
+                                <Spinner animation="border" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </Spinner>
+                                :
+                                <span>
+                                    <Button
+                                        variant="secondary"
+                                        type="button"
+                                        onClick={() => this.setState({ newAlbumName: "", isCreatingNewAlbum: false })}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        type="button"
+                                        onClick={this.createAlbum}
+                                    >
+                                        Create
+                                    </Button>
+                                </span>
+                            }
+                        </Modal.Footer>
+                    </Modal>
                     :
-                    <div>
-                        <Button
-                            variant="primary"
-                            type="button"
-                            onClick={() => this.setState({ isCreatingNewAlbum: true })}
-                        >
-                            Create New Album
-                        </Button>
-                        <Button
-                            variant="secondary"
-                            type="button"
-                            onClick={this.props.goBackToHomePage}
-                        >
-                            Go Back Home
-                        </Button>
-                    </div>
+                    null
                 }
+                <Container>
+                    {this.props.albums.map((album, i) => {
+                        return (
+                            <Card
+                                bg="Light"
+                                key={i}
+                                text="dark"
+                                style={{ width: '18rem' }}
+                                className="mb-2"
+                            >
+                                <Card.Body>
+                                    <Card.Title>{album.name}</Card.Title>
+                                    {this.state.isLoading && this.state.isLoadingIndex === i ?
+                                        <Spinner animation="border" role="status">
+                                            <span className="visually-hidden">Loading...</span>
+                                        </Spinner>
+                                        :
+                                        <span>
+                                            <Button
+                                                variant="primary"
+                                                type="button"
+                                                onClick={() => this.openAlbum(album.id, i)}
+                                            >
+                                                Open
+                                            </Button>
+                                            <Button
+                                                variant="danger"
+                                                type="button"
+                                                onClick={() => this.deleteAlbum(album.id, i)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </span>
+                                    }
+                                </Card.Body>
+                            </Card>
+                        )
+                    })}
+                </Container>
                 {this.state.isDisplayingAlbum ?
                     <ImageGallery
                         items={this.state.albumGalleryImages}
@@ -251,7 +297,6 @@ class AlbumsPage extends Component {
                     :
                     null
                 }
-
             </div>
         )
     }

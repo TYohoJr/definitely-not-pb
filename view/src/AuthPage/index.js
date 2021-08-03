@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import Spinner from 'react-bootstrap/Spinner';
 import './index.css';
 
 class AuthPage extends Component {
@@ -22,7 +23,8 @@ class AuthPage extends Component {
             secretQuestionPickID: null,
             secretQuestionPickText: "Select Question",
             secretQuestionAnswer: "",
-            loginError: ""
+            loginError: "",
+            isLoading: false,
         }
     }
 
@@ -51,32 +53,37 @@ class AuthPage extends Component {
             secretQuestionPickText: "Select Question",
             secretQuestionAnswer: "",
             loginError: "",
+            isLoading: false,
         })
     }
 
     logIn = async (username, password) => {
-        let loginData = {
-            username: username,
-            password: password,
-        }
-        await fetch("/api/login", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify(loginData)
-        }).then(async (resp) => {
-            if (resp.status !== 200) {
-                console.error("bad response code: ", resp.status)
-            } else {
-                let respJSON = await resp.json();
-                if (respJSON.is_error) {
-                    this.setState({ loginError: respJSON.error_message })
-                } else {
-                    this.setState({ loginError: "" })
-                    this.props.setLoggedIn(respJSON.app_user_id)
-                }
+        this.setState({ isLoading: true }, async () => {
+            let loginData = {
+                username: username,
+                password: password,
             }
+            await fetch("/api/login", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify(loginData)
+            }).then(async (resp) => {
+                if (resp.status !== 200) {
+                    console.error("bad response code: ", resp.status)
+                } else {
+                    let respJSON = await resp.json();
+                    if (respJSON.is_error) {
+                        this.setState({ loginError: respJSON.error_message })
+                    } else {
+                        this.setState({ loginError: "" })
+                        this.props.setLoggedIn(respJSON.app_user_id)
+                    }
+                }
+            }).finally(() => {
+                this.setState({ isLoading: false });
+            });
         })
     }
 
@@ -178,29 +185,33 @@ class AuthPage extends Component {
         if (!this.state.isLowercasePassword || !this.state.isUppercasePassword || !this.state.isNumberPassword || !this.state.passwordsMatch || !this.state.isValidUsername || !this.state.newUsername || !this.state.secretQuestionPickID || !this.state.secretQuestionAnswer) {
             return
         }
-        let userData = {
-            username: this.state.newUsername,
-            password: this.state.newPassword,
-            secret_question_id: this.state.secretQuestionPickID,
-            secret_question_answer: this.state.secretQuestionAnswer,
-        }
-        await fetch("/api/user", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify(userData)
-        }).then(async (resp) => {
-            if (resp.status !== 201) {
-                console.error("bad response code: ", resp.status)
-            } else {
-                let respJSON = await resp.json();
-                if (respJSON.is_error) {
-                    console.error(respJSON.error_message)
-                } else {
-                    this.resetAuthPage()
-                }
+        this.setState({isLoading: true}, async () => {
+            let userData = {
+                username: this.state.newUsername,
+                password: this.state.newPassword,
+                secret_question_id: this.state.secretQuestionPickID,
+                secret_question_answer: this.state.secretQuestionAnswer,
             }
+            await fetch("/api/user", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify(userData)
+            }).then(async (resp) => {
+                if (resp.status !== 201) {
+                    console.error("bad response code: ", resp.status)
+                } else {
+                    let respJSON = await resp.json();
+                    if (respJSON.is_error) {
+                        console.error(respJSON.error_message)
+                    } else {
+                        this.resetAuthPage()
+                    }
+                }
+            }).finally(() => {
+                this.setState({ isLoading: false });
+            });
         })
     }
 
@@ -235,20 +246,28 @@ class AuthPage extends Component {
                                     }
                                 </Form.Text>
                             </Form.Group>
-                            <Button
-                                variant="secondary"
-                                type="button"
-                                onClick={() => this.setState({ isRegistering: true })}
-                            >
-                                Register
-                            </Button>
-                            <Button
-                                variant="primary"
-                                type="button"
-                                onClick={() => this.logIn(this.state.username, this.state.password)}
-                            >
-                                Submit
-                            </Button>
+                            {this.state.isLoading ?
+                                <Spinner animation="border" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </Spinner>
+                                :
+                                <span>
+                                    <Button
+                                        variant="secondary"
+                                        type="button"
+                                        onClick={() => this.setState({ isRegistering: true })}
+                                    >
+                                        Register
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        type="button"
+                                        onClick={() => this.logIn(this.state.username, this.state.password)}
+                                    >
+                                        Submit
+                                    </Button>
+                                </span>
+                            }
                         </Form>
                     </div>
                     :
@@ -339,20 +358,28 @@ class AuthPage extends Component {
                                     }
                                 </Form.Text>
                             </Form.Group>
-                            <Button
-                                variant="secondary"
-                                type="button"
-                                onClick={this.resetAuthPage}
-                            >
-                                Return To Login
-                            </Button>
-                            <Button
-                                variant="primary"
-                                type="button"
-                                onClick={this.registerUser}
-                            >
-                                Register
-                            </Button>
+                            {this.state.isLoading ?
+                                <Spinner animation="border" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </Spinner>
+                                :
+                                <span>
+                                    <Button
+                                        variant="secondary"
+                                        type="button"
+                                        onClick={this.resetAuthPage}
+                                    >
+                                        Return To Login
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        type="button"
+                                        onClick={this.registerUser}
+                                    >
+                                        Register
+                                    </Button>
+                                </span>
+                            }
                         </Form>
                     </div>
                 }

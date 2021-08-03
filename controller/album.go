@@ -170,7 +170,17 @@ func (s *Server) handleGetAlbumsByUserIDAndName(userID int, albumName string) ([
 }
 
 func (s *Server) handleDeleteAlbum(albumID int) error {
-	err := s.DB.DeleteAlbumByID(albumID)
+	albumPhotos, err := s.DB.GetAlbumPhotosByAlbumID(albumID)
+	if err != nil {
+		return err
+	}
+	for _, ap := range albumPhotos {
+		err = s.DB.DeleteAlbumPhotoByID(*ap.ID)
+		if err != nil {
+			return err
+		}
+	}
+	err = s.DB.DeleteAlbumByID(albumID)
 	if err != nil {
 		return err
 	}

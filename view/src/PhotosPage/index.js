@@ -4,6 +4,7 @@ import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Modal from 'react-bootstrap/Modal';
+import Spinner from 'react-bootstrap/Spinner';
 import './index.css';
 
 class PhotosPage extends Component {
@@ -19,6 +20,8 @@ class PhotosPage extends Component {
             selectedAlbum: null,
             selectedPhotoAlbumIDs: [],
             showChooseAlbum: false,
+            isLoading: false,
+            isLoadingIndex: -1,
         }
     }
 
@@ -75,36 +78,44 @@ class PhotosPage extends Component {
         })
     }
 
-    deletePhoto = async (photoID) => {
-        await fetch("/api/photo/id/" + encodeURIComponent(photoID), {
-            method: "DELETE",
-            headers: {
-                "content-type": "application/json",
-            }
-        }).then(async (resp) => {
-            if (resp.status !== 204) {
-                console.error("bad response code: ", resp.status)
-            } else {
-                this.getPhotos()
-            }
+    deletePhoto = async (photoID, i) => {
+        this.setState({ isLoadingIndex: i, isLoading: true }, async () => {
+            await fetch("/api/photo/id/" + encodeURIComponent(photoID), {
+                method: "DELETE",
+                headers: {
+                    "content-type": "application/json",
+                }
+            }).then(async (resp) => {
+                if (resp.status !== 204) {
+                    console.error("bad response code: ", resp.status)
+                } else {
+                    await this.getPhotos()
+                }
+            }).finally(() => {
+                this.setState({ isLoadingIndex: -1, isLoading: false });
+            });
         })
     }
 
-    viewPhoto = async (photo) => {
-        await fetch("/api/photo/id/" + encodeURIComponent(photo.id), {
-            method: "GET",
-            headers: {
-                "content-type": "application/json",
-            }
-        }).then(async (resp) => {
-            if (resp.status !== 200) {
-                console.error("bad response code: ", resp.status)
-            } else {
-                let respJSON = await resp.json();
-                this.setState({ selectedPhotoURL: respJSON }, () => {
-                    this.setState({ showPicture: true })
-                })
-            }
+    viewPhoto = async (photo, i) => {
+        this.setState({ isLoadingIndex: i, isLoading: true }, async () => {
+            await fetch("/api/photo/id/" + encodeURIComponent(photo.id), {
+                method: "GET",
+                headers: {
+                    "content-type": "application/json",
+                }
+            }).then(async (resp) => {
+                if (resp.status !== 200) {
+                    console.error("bad response code: ", resp.status)
+                } else {
+                    let respJSON = await resp.json();
+                    this.setState({ selectedPhotoURL: respJSON }, () => {
+                        this.setState({ showPicture: true })
+                    })
+                }
+            }).finally(() => {
+                this.setState({ isLoadingIndex: -1, isLoading: false });
+            });
         })
     }
 
@@ -135,42 +146,46 @@ class PhotosPage extends Component {
 
     uploadPhoto = async (file) => {
         if (file) {
-            let photoData = {
-                app_user_id: this.props.appUserID,
-                name: file.name,
-                description: this.state.selectedFileDescription,
-            }
-            await fetch("/api/photo/file_name/" + encodeURIComponent(file.name), {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                },
-                body: file
-            }).then(async (resp) => {
-                if (resp.status !== 204) {
-                    console.error("bad response code: ", resp.status)
-                } else {
-                    await fetch("/api/photo", {
-                        method: "PUT",
-                        headers: {
-                            "content-type": "application/json",
-                        },
-                        body: JSON.stringify(photoData)
-                    }).then((resp) => {
-                        if (resp.status !== 204) {
-                            console.error("bad response code: ", resp.status)
-                        } else {
-                            this.setState({
-                                selectedFileDescription: "",
-                                selectedFile: null,
-                                showUpload: false
-                            }, () => {
-                                this.getPhotos();
-                            });
-                        }
-                    });
+            this.setState({ isLoading: true }, async () => {
+                let photoData = {
+                    app_user_id: this.props.appUserID,
+                    name: file.name,
+                    description: this.state.selectedFileDescription,
                 }
-            });
+                await fetch("/api/photo/file_name/" + encodeURIComponent(file.name), {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    body: file
+                }).then(async (resp) => {
+                    if (resp.status !== 204) {
+                        console.error("bad response code: ", resp.status)
+                    } else {
+                        await fetch("/api/photo", {
+                            method: "PUT",
+                            headers: {
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify(photoData)
+                        }).then((resp) => {
+                            if (resp.status !== 204) {
+                                console.error("bad response code: ", resp.status)
+                            } else {
+                                this.setState({
+                                    selectedFileDescription: "",
+                                    selectedFile: null,
+                                    showUpload: false,
+                                }, () => {
+                                    this.getPhotos();
+                                });
+                            }
+                        });
+                    }
+                }).finally(() => {
+                    this.setState({ isLoadingIndex: -1, isLoading: false });
+                });
+            })
         }
     }
 
@@ -214,27 +229,35 @@ class PhotosPage extends Component {
                                 <Card.Body>
                                     <Card.Title>{photo.name}</Card.Title>
                                     <Card.Text>{photo.description}</Card.Text>
-                                    <Button
-                                        variant="primary"
-                                        type="button"
-                                        onClick={() => this.viewPhoto(photo)}
-                                    >
-                                        View
-                                    </Button>
-                                    <Button
-                                        variant="success"
-                                        type="button"
-                                        onClick={() => this.handleShowChooseAlbum(photo)}
-                                    >
-                                        Add To Album
-                                    </Button>
-                                    <Button
-                                        variant="danger"
-                                        type="button"
-                                        onClick={() => this.deletePhoto(photo.id)}
-                                    >
-                                        Delete
-                                    </Button>
+                                    {this.state.isLoading && this.state.isLoadingIndex === i ?
+                                        <Spinner animation="border" role="status">
+                                            <span className="visually-hidden">Loading...</span>
+                                        </Spinner>
+                                        :
+                                        <span>
+                                            <Button
+                                                variant="primary"
+                                                type="button"
+                                                onClick={() => this.viewPhoto(photo, i)}
+                                            >
+                                                View
+                                            </Button>
+                                            <Button
+                                                variant="success"
+                                                type="button"
+                                                onClick={() => this.handleShowChooseAlbum(photo)}
+                                            >
+                                                Add To Album
+                                            </Button>
+                                            <Button
+                                                variant="danger"
+                                                type="button"
+                                                onClick={() => this.deletePhoto(photo.id, i)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </span>
+                                    }
                                 </Card.Body>
                             </Card>
                         )
@@ -269,8 +292,16 @@ class PhotosPage extends Component {
                             </Form.Group>
                         </Modal.Body>
                         <Modal.Footer>
-                            <Button variant="success" onClick={() => this.uploadPhoto(this.state.selectedFile)}>Upload</Button>
-                            <Button variant="danger" onClick={() => this.setState({ showUpload: false })}>Cancel</Button>
+                            {this.state.isLoading ?
+                                <Spinner animation="border" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </Spinner>
+                                :
+                                <span>
+                                    <Button variant="success" onClick={() => this.uploadPhoto(this.state.selectedFile)}>Upload</Button>
+                                    <Button variant="danger" onClick={() => this.setState({ showUpload: false })}>Cancel</Button>
+                                </span>
+                            }
                         </Modal.Footer>
                     </Modal>
                     :
