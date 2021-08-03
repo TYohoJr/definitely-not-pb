@@ -5,6 +5,7 @@ import AlbumsPage from './AlbumsPage';
 import PhotosPage from './PhotosPage';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -19,6 +20,8 @@ class App extends Component {
       albums: [],
       showError: false,
       errorMsg: "",
+      isUnknownError: true,
+      userErrorDescription: "",
     }
   }
 
@@ -64,8 +67,38 @@ class App extends Component {
     })
   }
 
-  displayError = (msg) => {
-    this.setState({ errorMsg: msg, showError: true })
+  displayError = (msg, isUnknown) => {
+    this.setState({ errorMsg: msg, showError: true, isUnknownError: isUnknown })
+  }
+
+  closeError = () => {
+    this.setState({
+      showError: false,
+      errorMsg: "",
+      isUnknownError: true,
+      userErrorDescription: ""
+    })
+  }
+
+  handleUserErrorDescriptionChange = (e) => {
+    this.setState({ userErrorDescription: e.target.value })
+  }
+
+  reportError = async () => {
+    let errorData = {
+      error_message: this.state.errorMsg,
+      user_description: this.state.userErrorDescription,
+      app_user_id: this.state.appUserID,
+    }
+    await fetch("/api/error_event/", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(errorData)
+    }).finally(() => {
+      this.closeError()
+    });
   }
 
   render() {
@@ -131,9 +164,34 @@ class App extends Component {
             <Modal.Header>
               <Modal.Title>An error has occured</Modal.Title>
             </Modal.Header>
-            <Modal.Body>{this.state.errorMsg}</Modal.Body>
+            <Modal.Body>
+              {this.state.errorMsg}
+              <br />
+              <br />
+              {this.state.isUnknownError ?
+                <span>
+                  <Form.Label
+                    className="upload-form-label upload-form-description-label"
+                  >Description of what you were doing when the error occured:</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    onChange={(e) => this.handleUserErrorDescriptionChange(e)}
+                    value={this.state.userErrorDescription}
+                  />
+                </span>
+                :
+                null
+              }
+            </Modal.Body>
             <Modal.Footer>
-              <Button variant="primary" onClick={() => this.setState({ showError: false, errorMsg: "" })}>Ok</Button>
+              {this.state.isUnknownError ?
+                <span>
+                  <Button variant="success" onClick={this.reportError}>Report Error</Button>
+                  <Button variant="primary" onClick={this.closeError}>Continue Without Reporting</Button>
+                </span>
+                :
+                <Button variant="primary" onClick={this.closeError}>Ok</Button>
+              }
             </Modal.Footer>
           </Modal>
           :

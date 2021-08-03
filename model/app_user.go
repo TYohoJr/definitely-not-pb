@@ -13,7 +13,7 @@ type AppUser struct {
 	SecretQuestionID     *int    `db:"secret_question_id" json:"secret_question_id"`
 	SecretQuestionAnswer *string `db:"secret_question_answer" json:"secret_question_answer"`
 	PasswordHash         *string `db:"password_hash" json:"-"`
-	ExpiredPassword      *bool   `db:"expired_password" json:"-"`
+	IsPasswordExpired    *bool   `db:"is_password_expired" json:"-"`
 }
 
 func (u *AppUser) VerifyPassword(password string) error {

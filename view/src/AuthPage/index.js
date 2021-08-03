@@ -72,7 +72,7 @@ class AuthPage extends Component {
             }).then(async (resp) => {
                 if (resp.status !== 200) {
                     let errorMsg = await resp.text();
-                    this.props.displayError(errorMsg);
+                    this.props.displayError(errorMsg, true);
                 } else {
                     let respJSON = await resp.json();
                     if (respJSON.is_error) {
@@ -97,7 +97,7 @@ class AuthPage extends Component {
         }).then(async (resp) => {
             if (resp.status !== 200) {
                 let errorMsg = await resp.text();
-                this.props.displayError(errorMsg);
+                this.props.displayError(errorMsg, true);
             } else {
                 let respJSON = await resp.json();
                 this.setState({ secretQuestions: respJSON })
@@ -134,7 +134,7 @@ class AuthPage extends Component {
                 }).then(async (resp) => {
                     if (resp.status !== 200) {
                         let errorMsg = await resp.text();
-                        this.props.displayError(errorMsg);
+                        this.props.displayError(errorMsg, true);
                     } else {
                         let respJSON = await resp.json();
                         if (respJSON.length > 0) {
@@ -204,7 +204,7 @@ class AuthPage extends Component {
             }).then(async (resp) => {
                 if (resp.status !== 201) {
                     let errorMsg = await resp.text();
-                    this.props.displayError(errorMsg);
+                    this.props.displayError(errorMsg, true);
                 } else {
                     let respJSON = await resp.json();
                     if (respJSON.is_error) {

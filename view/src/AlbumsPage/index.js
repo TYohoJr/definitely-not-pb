@@ -39,7 +39,7 @@ class AlbumsPage extends Component {
             }).then(async (resp) => {
                 if (resp.status !== 204) {
                     let errorMsg = await resp.text();
-                    this.props.displayError(errorMsg);
+                    this.props.displayError(errorMsg, true);
                 } else {
                     this.props.getAlbums()
                 }
@@ -59,7 +59,7 @@ class AlbumsPage extends Component {
             }).then(async (resp) => {
                 if (resp.status !== 200) {
                     let errorMsg = await resp.text();
-                    this.props.displayError(errorMsg);
+                    this.props.displayError(errorMsg, true);
                 } else {
                     let respJSON = await resp.json();
                     if (respJSON.length > 0) {
@@ -69,7 +69,7 @@ class AlbumsPage extends Component {
                         this.setState({ isDisplayingAlbum: true })
                     } else {
                         let errorMsg = "album is empty"
-                        this.props.displayError(errorMsg);
+                        this.props.displayError(errorMsg, false);
                     }
                 }
             }).finally(() => {
@@ -87,7 +87,7 @@ class AlbumsPage extends Component {
         }).then(async (resp) => {
             if (resp.status !== 200) {
                 let errorMsg = await resp.text();
-                this.props.displayError(errorMsg);
+                this.props.displayError(errorMsg, true);
             } else {
                 let respJSON = await resp.json();
                 let images = this.state.albumGalleryImages
@@ -119,7 +119,7 @@ class AlbumsPage extends Component {
             }).then(async (resp) => {
                 if (resp.status !== 201) {
                     let errorMsg = await resp.text();
-                    this.props.displayError(errorMsg);
+                    this.props.displayError(errorMsg, true);
                 } else {
                     this.setState({ isCreatingNewAlbum: false, newAlbumName: "" }, () => {
                         this.props.getAlbums()
@@ -142,7 +142,7 @@ class AlbumsPage extends Component {
                 }).then(async (resp) => {
                     if (resp.status !== 200) {
                         let errorMsg = await resp.text();
-                        this.props.displayError(errorMsg);
+                        this.props.displayError(errorMsg, true);
                     } else {
                         let respJSON = await resp.json();
                         if (respJSON.length > 0) {

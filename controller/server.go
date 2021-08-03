@@ -85,4 +85,7 @@ func (s *Server) initializeRoutes() {
 			r.Get("/", s.AlbumPhotoRouter)
 		})
 	})
+	s.Router.Route("/api/error_event", func(r chi.Router) {
+		r.Post("/", s.ErrorEventRouter)
+	})
 }

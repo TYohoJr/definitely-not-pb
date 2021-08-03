@@ -39,7 +39,7 @@ class PhotosPage extends Component {
         }).then(async (resp) => {
             if (resp.status !== 200) {
                 let errorMsg = await resp.text();
-                this.props.displayError(errorMsg);
+                this.props.displayError(errorMsg, true);
             } else {
                 let respJSON = await resp.json();
                 let albumIDs = []
@@ -72,7 +72,7 @@ class PhotosPage extends Component {
         }).then(async (resp) => {
             if (resp.status !== 200) {
                 let errorMsg = await resp.text();
-                this.props.displayError(errorMsg);
+                this.props.displayError(errorMsg, true);
             } else {
                 let respJSON = await resp.json();
                 this.setState({ photos: respJSON })
@@ -90,7 +90,7 @@ class PhotosPage extends Component {
             }).then(async (resp) => {
                 if (resp.status !== 204) {
                     let errorMsg = await resp.text();
-                    this.props.displayError(errorMsg);
+                    this.props.displayError(errorMsg, true);
                 } else {
                     await this.getPhotos()
                 }
@@ -110,7 +110,7 @@ class PhotosPage extends Component {
             }).then(async (resp) => {
                 if (resp.status !== 200) {
                     let errorMsg = await resp.text();
-                    this.props.displayError(errorMsg);
+                    this.props.displayError(errorMsg, true);
                 } else {
                     let respJSON = await resp.json();
                     this.setState({ selectedPhotoURL: respJSON }, () => {
@@ -140,7 +140,7 @@ class PhotosPage extends Component {
         }).then(async (resp) => {
             if (resp.status !== 201) {
                 let errorMsg = await resp.text();
-                this.props.displayError(errorMsg);
+                this.props.displayError(errorMsg, true);
             } else {
                 this.setState({ showChooseAlbum: false }, () => {
                     this.props.getAlbums()
@@ -166,7 +166,7 @@ class PhotosPage extends Component {
                 }).then(async (resp) => {
                     if (resp.status !== 204) {
                         let errorMsg = await resp.text();
-                        this.props.displayError(errorMsg);
+                        this.props.displayError(errorMsg, true);
                     } else {
                         await fetch("/api/photo", {
                             method: "PUT",
@@ -177,7 +177,7 @@ class PhotosPage extends Component {
                         }).then(async (resp) => {
                             if (resp.status !== 204) {
                                 let errorMsg = await resp.text();
-                                this.props.displayError(errorMsg);
+                                this.props.displayError(errorMsg, true);
                             } else {
                                 this.setState({
                                     selectedFileDescription: "",
