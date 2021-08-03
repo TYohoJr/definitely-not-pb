@@ -38,7 +38,8 @@ class PhotosPage extends Component {
             }
         }).then(async (resp) => {
             if (resp.status !== 200) {
-                console.error("bad response code: ", resp.status)
+                let errorMsg = await resp.text();
+                this.props.displayError(errorMsg);
             } else {
                 let respJSON = await resp.json();
                 let albumIDs = []
@@ -70,7 +71,8 @@ class PhotosPage extends Component {
             }
         }).then(async (resp) => {
             if (resp.status !== 200) {
-                console.error("bad response code: ", resp.status)
+                let errorMsg = await resp.text();
+                this.props.displayError(errorMsg);
             } else {
                 let respJSON = await resp.json();
                 this.setState({ photos: respJSON })
@@ -87,7 +89,8 @@ class PhotosPage extends Component {
                 }
             }).then(async (resp) => {
                 if (resp.status !== 204) {
-                    console.error("bad response code: ", resp.status)
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg);
                 } else {
                     await this.getPhotos()
                 }
@@ -106,7 +109,8 @@ class PhotosPage extends Component {
                 }
             }).then(async (resp) => {
                 if (resp.status !== 200) {
-                    console.error("bad response code: ", resp.status)
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg);
                 } else {
                     let respJSON = await resp.json();
                     this.setState({ selectedPhotoURL: respJSON }, () => {
@@ -133,9 +137,10 @@ class PhotosPage extends Component {
                 "content-type": "application/json",
             },
             body: JSON.stringify(albumPhotoData)
-        }).then((resp) => {
+        }).then(async (resp) => {
             if (resp.status !== 201) {
-                console.error("bad response code: ", resp.status)
+                let errorMsg = await resp.text();
+                this.props.displayError(errorMsg);
             } else {
                 this.setState({ showChooseAlbum: false }, () => {
                     this.props.getAlbums()
@@ -160,7 +165,8 @@ class PhotosPage extends Component {
                     body: file
                 }).then(async (resp) => {
                     if (resp.status !== 204) {
-                        console.error("bad response code: ", resp.status)
+                        let errorMsg = await resp.text();
+                        this.props.displayError(errorMsg);
                     } else {
                         await fetch("/api/photo", {
                             method: "PUT",
@@ -168,9 +174,10 @@ class PhotosPage extends Component {
                                 "content-type": "application/json",
                             },
                             body: JSON.stringify(photoData)
-                        }).then((resp) => {
+                        }).then(async (resp) => {
                             if (resp.status !== 204) {
-                                console.error("bad response code: ", resp.status)
+                                let errorMsg = await resp.text();
+                                this.props.displayError(errorMsg);
                             } else {
                                 this.setState({
                                     selectedFileDescription: "",

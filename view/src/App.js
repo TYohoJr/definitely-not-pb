@@ -3,6 +3,8 @@ import AuthPage from './AuthPage'
 import HomePage from './HomePage';
 import AlbumsPage from './AlbumsPage';
 import PhotosPage from './PhotosPage';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -15,6 +17,8 @@ class App extends Component {
       showPhotosPage: false,
       appUserID: 0,
       albums: [],
+      showError: false,
+      errorMsg: "",
     }
   }
 
@@ -60,6 +64,10 @@ class App extends Component {
     })
   }
 
+  displayError = (msg) => {
+    this.setState({ errorMsg: msg, showError: true })
+  }
+
   render() {
     let vw = window.innerWidth * 0.01;
     document.documentElement.style.setProperty('--vw', `${vw}px`);
@@ -74,6 +82,7 @@ class App extends Component {
             appUserID={this.state.appUserID}
             showAlbumsPage={this.showAlbumsPage}
             showPhotosPage={this.showPhotosPage}
+            displayError={this.displayError}
           />
           :
           null
@@ -82,6 +91,7 @@ class App extends Component {
           <AuthPage
             isLoggedIn={this.state.isLoggedIn}
             setLoggedIn={this.setLoggedIn}
+            displayError={this.displayError}
           />
           :
           null
@@ -93,6 +103,7 @@ class App extends Component {
             albums={this.state.albums}
             getAlbums={this.getAlbums}
             logOut={this.setLoggedOut}
+            displayError={this.displayError}
           />
           :
           null
@@ -104,7 +115,27 @@ class App extends Component {
             albums={this.state.albums}
             logOut={this.setLoggedOut}
             getAlbums={this.getAlbums}
+            displayError={this.displayError}
           />
+          :
+          null
+        }
+        {this.state.showError ?
+          <Modal
+            show={true}
+            size="lg"
+            aria-labelledby="contained-modal-title-vcenter"
+            centered
+            backdrop="static"
+          >
+            <Modal.Header>
+              <Modal.Title>An error has occured</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>{this.state.errorMsg}</Modal.Body>
+            <Modal.Footer>
+              <Button variant="primary" onClick={() => this.setState({ showError: false, errorMsg: "" })}>Ok</Button>
+            </Modal.Footer>
+          </Modal>
           :
           null
         }

@@ -71,7 +71,8 @@ class AuthPage extends Component {
                 body: JSON.stringify(loginData)
             }).then(async (resp) => {
                 if (resp.status !== 200) {
-                    console.error("bad response code: ", resp.status)
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg);
                 } else {
                     let respJSON = await resp.json();
                     if (respJSON.is_error) {
@@ -95,7 +96,8 @@ class AuthPage extends Component {
             }
         }).then(async (resp) => {
             if (resp.status !== 200) {
-                console.error("bad response code: ", resp.status)
+                let errorMsg = await resp.text();
+                this.props.displayError(errorMsg);
             } else {
                 let respJSON = await resp.json();
                 this.setState({ secretQuestions: respJSON })
@@ -131,7 +133,8 @@ class AuthPage extends Component {
                     }
                 }).then(async (resp) => {
                     if (resp.status !== 200) {
-                        console.error("bad response code: ", resp.status)
+                        let errorMsg = await resp.text();
+                        this.props.displayError(errorMsg);
                     } else {
                         let respJSON = await resp.json();
                         if (respJSON.length > 0) {
@@ -200,7 +203,8 @@ class AuthPage extends Component {
                 body: JSON.stringify(userData)
             }).then(async (resp) => {
                 if (resp.status !== 201) {
-                    console.error("bad response code: ", resp.status)
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg);
                 } else {
                     let respJSON = await resp.json();
                     if (respJSON.is_error) {

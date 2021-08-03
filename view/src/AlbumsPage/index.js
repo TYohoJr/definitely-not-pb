@@ -38,7 +38,8 @@ class AlbumsPage extends Component {
                 }
             }).then(async (resp) => {
                 if (resp.status !== 204) {
-                    console.error("bad response code: ", resp.status)
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg);
                 } else {
                     this.props.getAlbums()
                 }
@@ -57,7 +58,8 @@ class AlbumsPage extends Component {
                 }
             }).then(async (resp) => {
                 if (resp.status !== 200) {
-                    console.error("bad response code: ", resp.status)
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg);
                 } else {
                     let respJSON = await resp.json();
                     if (respJSON.length > 0) {
@@ -65,6 +67,9 @@ class AlbumsPage extends Component {
                             await this.addPhotoToAlbum(respJSON[i].photo_id)
                         }
                         this.setState({ isDisplayingAlbum: true })
+                    } else {
+                        let errorMsg = "album is empty"
+                        this.props.displayError(errorMsg);
                     }
                 }
             }).finally(() => {
@@ -81,7 +86,8 @@ class AlbumsPage extends Component {
             }
         }).then(async (resp) => {
             if (resp.status !== 200) {
-                console.error("bad response code: ", resp.status)
+                let errorMsg = await resp.text();
+                this.props.displayError(errorMsg);
             } else {
                 let respJSON = await resp.json();
                 let images = this.state.albumGalleryImages
@@ -112,7 +118,8 @@ class AlbumsPage extends Component {
                 body: JSON.stringify(albumData)
             }).then(async (resp) => {
                 if (resp.status !== 201) {
-                    console.error("bad response code: ", resp.status)
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg);
                 } else {
                     this.setState({ isCreatingNewAlbum: false, newAlbumName: "" }, () => {
                         this.props.getAlbums()
@@ -134,7 +141,8 @@ class AlbumsPage extends Component {
                     }
                 }).then(async (resp) => {
                     if (resp.status !== 200) {
-                        console.error("bad response code: ", resp.status)
+                        let errorMsg = await resp.text();
+                        this.props.displayError(errorMsg);
                     } else {
                         let respJSON = await resp.json();
                         if (respJSON.length > 0) {
