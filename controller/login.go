@@ -1,9 +1,11 @@
 package controller
 
 import (
-	"defnotpb/model"
 	"encoding/json"
 	"net/http"
+
+	"defnotpb/controller/auth"
+	"defnotpb/model"
 )
 
 type LoginResult struct {
@@ -60,5 +62,13 @@ func (s *Server) handleLogin(user model.AppUser) LoginResult {
 		return result
 	}
 	result.AppUserId = appUser.ID
+	token, err := auth.CreateToken(*appUser.ID)
+	if err != nil {
+		errStr := err.Error()
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
+	result.Response = &token
 	return result
 }

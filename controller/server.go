@@ -39,6 +39,9 @@ func (s *Server) Initialize() {
 }
 
 func (s *Server) initializeRoutes() {
+	m := Middleware{
+		DB: s.DB,
+	}
 	s.Router.Route("/api/login", func(r chi.Router) {
 		r.Post("/", s.LoginRouter)
 	})
@@ -52,40 +55,40 @@ func (s *Server) initializeRoutes() {
 		})
 	})
 	s.Router.Route("/api/photo", func(r chi.Router) {
-		r.Put("/", s.PhotoRouter)
+		r.Put("/", m.AuthorizationMiddleware(s.PhotoRouter))
 		r.Route("/user/{userID}", func(r chi.Router) {
-			r.Get("/", s.PhotoUserRouter)
+			r.Get("/", m.AuthorizationMiddleware(s.PhotoUserRouter))
 		})
 		r.Route("/id/{photoID}", func(r chi.Router) {
-			r.Get("/", s.PhotoRouter)
-			r.Delete("/", s.PhotoRouter)
+			r.Get("/", m.AuthorizationMiddleware(s.PhotoRouter))
+			r.Delete("/", m.AuthorizationMiddleware(s.PhotoRouter))
 		})
 		r.Route("/file_name/{fileName}", func(r chi.Router) {
-			r.Post("/", s.PhotoRouter)
+			r.Post("/", m.AuthorizationMiddleware(s.PhotoRouter))
 		})
 	})
 	s.Router.Route("/api/album", func(r chi.Router) {
-		r.Post("/", s.AlbumRouter)
+		r.Post("/", m.AuthorizationMiddleware(s.AlbumRouter))
 		r.Route("/id/{albumID}", func(r chi.Router) {
-			r.Delete("/", s.AlbumRouter)
+			r.Delete("/", m.AuthorizationMiddleware(s.AlbumRouter))
 		})
 		r.Route("/user/{userID}", func(r chi.Router) {
-			r.Get("/", s.AlbumRouter)
+			r.Get("/", m.AuthorizationMiddleware(s.AlbumRouter))
 			r.Route("/name/{albumName}", func(r chi.Router) {
-				r.Get("/", s.AlbumCheckRouter)
+				r.Get("/", m.AuthorizationMiddleware(s.AlbumCheckRouter))
 			})
 		})
 		r.Route("/photo/{photoID}", func(r chi.Router) {
-			r.Get("/", s.AlbumByPhotoRouter)
+			r.Get("/", m.AuthorizationMiddleware(s.AlbumByPhotoRouter))
 		})
 	})
 	s.Router.Route("/api/album_photo", func(r chi.Router) {
-		r.Post("/", s.AlbumPhotoRouter)
+		r.Post("/", m.AuthorizationMiddleware(s.AlbumPhotoRouter))
 		r.Route("/album/{albumID}", func(r chi.Router) {
-			r.Get("/", s.AlbumPhotoRouter)
+			r.Get("/", m.AuthorizationMiddleware(s.AlbumPhotoRouter))
 		})
 	})
 	s.Router.Route("/api/error_event", func(r chi.Router) {
-		r.Post("/", s.ErrorEventRouter)
+		r.Post("/", m.AuthorizationMiddleware(s.ErrorEventRouter))
 	})
 }

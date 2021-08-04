@@ -31,10 +31,12 @@ class AlbumsPage extends Component {
 
     deleteAlbum = async (albumID, i) => {
         this.setState({ isLoading: true, isLoadingIndex: i }, async () => {
+            const token = localStorage.getItem('token');
             await fetch("/api/album/id/" + encodeURIComponent(albumID), {
                 method: "DELETE",
                 headers: {
                     "content-type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 }
             }).then(async (resp) => {
                 if (resp.status !== 204) {
@@ -51,10 +53,12 @@ class AlbumsPage extends Component {
 
     openAlbum = async (albumID, i) => {
         this.setState({ isLoading: true, isLoadingIndex: i }, async () => {
+            const token = localStorage.getItem('token');
             await fetch("/api/album_photo/album/" + encodeURIComponent(albumID), {
                 method: "GET",
                 headers: {
                     "content-type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 }
             }).then(async (resp) => {
                 if (resp.status !== 200) {
@@ -79,10 +83,12 @@ class AlbumsPage extends Component {
     }
 
     addPhotoToAlbum = async (photoID) => {
+        const token = localStorage.getItem('token');
         await fetch("/api/photo/id/" + encodeURIComponent(photoID), {
             method: "GET",
             headers: {
                 "content-type": "application/json",
+                "Authorization": `Bearer ${token}`,
             }
         }).then(async (resp) => {
             if (resp.status !== 200) {
@@ -110,10 +116,12 @@ class AlbumsPage extends Component {
                 name: this.state.newAlbumName,
                 app_user_id: this.props.appUserID,
             }
+            const token = localStorage.getItem('token');
             await fetch("/api/album", {
                 method: "POST",
                 headers: {
                     "content-type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify(albumData)
             }).then(async (resp) => {
@@ -134,10 +142,12 @@ class AlbumsPage extends Component {
     handleNewAlbumNameChange = async (e) => {
         this.setState({ newAlbumName: e.target.value }, async () => {
             if (this.state.newAlbumName) {
+                const token = localStorage.getItem('token');
                 await fetch("/api/album/user/" + encodeURIComponent(this.props.appUserID) + "/name/" + encodeURIComponent(this.state.newAlbumName), {
                     method: "GET",
                     headers: {
                         "content-type": "application/json",
+                        "Authorization": `Bearer ${token}`,
                     }
                 }).then(async (resp) => {
                     if (resp.status !== 200) {

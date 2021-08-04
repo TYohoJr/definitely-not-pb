@@ -25,11 +25,13 @@ class App extends Component {
     }
   }
 
-  setLoggedIn = async (userID) => {
+  setLoggedIn = async (userID, token) => {
+    localStorage.setItem('token', token);
     this.setState({ appUserID: userID, isLoggedIn: true })
   }
 
   setLoggedOut = async () => {
+    localStorage.removeItem('token');
     this.setState({
       appUserID: 0,
       isLoggedIn: false,
@@ -52,14 +54,17 @@ class App extends Component {
   }
 
   getAlbums = async () => {
+    const token = localStorage.getItem('token');
     await fetch("/api/album/user/" + encodeURIComponent(this.state.appUserID), {
       method: "GET",
       headers: {
-        "content-type": "application/json",
-      }
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
     }).then(async (resp) => {
       if (resp.status !== 200) {
-        console.error("bad response code: ", resp.status)
+        let errorMsg = await resp.text();
+        this.displayError(errorMsg, true);
       } else {
         let respJSON = await resp.json();
         this.setState({ albums: respJSON })
@@ -85,6 +90,7 @@ class App extends Component {
   }
 
   reportError = async () => {
+    const token = localStorage.getItem('token');
     let errorData = {
       error_message: this.state.errorMsg,
       user_description: this.state.userErrorDescription,
@@ -94,6 +100,7 @@ class App extends Component {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify(errorData)
     }).finally(() => {
