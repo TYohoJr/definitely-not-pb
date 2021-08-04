@@ -55,3 +55,28 @@ func (db *DB) UpdateAccountInfo(ai AccountInfo) error {
 	}
 	return nil
 }
+
+func (db *DB) UpdateAccountInfo2FACode(userID int, twofaCode string) error {
+	now := time.Now().UTC()
+	expiration := now.Add(time.Minute * 10)
+	_, err := db.Exec(
+		`UPDATE account_info
+		SET twofa_code=$2, twofa_code_expiration=$3
+		WHERE app_user_id=$1`, userID, twofaCode, expiration)
+	if err != nil {
+		return fmt.Errorf("failed to update account_info in db: %v", err)
+	}
+	return nil
+}
+
+func (db *DB) UpdateAccountInfoConfirmed(userID int) error {
+	trueVal := true
+	_, err := db.Exec(
+		`UPDATE account_info
+		SET is_email_confirmed=$2
+		WHERE app_user_id=$1`, userID, trueVal)
+	if err != nil {
+		return fmt.Errorf("failed to update account_info in db: %v", err)
+	}
+	return nil
+}
