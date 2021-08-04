@@ -3,6 +3,7 @@ import AuthPage from './AuthPage'
 import HomePage from './HomePage';
 import AlbumsPage from './AlbumsPage';
 import PhotosPage from './PhotosPage';
+import AccountPage from './AccountPage';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -24,6 +25,7 @@ class App extends Component {
       isUnknownError: true,
       userErrorDescription: "",
       showAuthModal: false,
+      showAccountModal: false,
       pageToShow: "home",
     }
   }
@@ -45,6 +47,12 @@ class App extends Component {
       albums: [],
       pageToShow: "home",
       showAuthModal: false,
+    })
+  }
+
+  closeAccountModal = async () => {
+    this.setState({
+      showAccountModal: false,
     })
   }
 
@@ -141,7 +149,7 @@ class App extends Component {
                 {this.state.isLoggedIn ?
                   <Container>
                     <Nav.Link
-                      onClick={() => console.log("Opening account modal")}
+                      onClick={() => this.setState({ showAccountModal: true })}
                     >Account</Nav.Link>
                     <Nav.Link
                       onClick={this.setLoggedOut}
@@ -200,6 +208,25 @@ class App extends Component {
                 isLoggedIn={this.state.isLoggedIn}
                 setLoggedIn={this.setLoggedIn}
                 setLoggedOut={this.setLoggedOut}
+                displayError={this.displayError}
+              />
+            </Modal.Body>
+          </Modal>
+          :
+          null
+        }
+        {this.state.showAccountModal ?
+          <Modal
+            show={true}
+            size="lg"
+            aria-labelledby="contained-modal-title-vcenter"
+            centered
+            backdrop="static"
+          >
+            <Modal.Body>
+              <AccountPage
+                appUserID={this.state.appUserID}
+                closeAccountModal={this.closeAccountModal}
                 displayError={this.displayError}
               />
             </Modal.Body>

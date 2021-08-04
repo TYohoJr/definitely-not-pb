@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	serverPort int    = 8080
-	awsRegion  string = "us-east-1"
-	bucketName string = "definitely-not-photobucket"
+	serverPort      int    = 8080
+	awsRegion       string = "us-east-1"
+	bucketName      string = "definitely-not-photobucket"
+	defaultAcctType string = "test"
 )
 
 type Server struct {
@@ -90,5 +91,11 @@ func (s *Server) initializeRoutes() {
 	})
 	s.Router.Route("/api/error_event", func(r chi.Router) {
 		r.Post("/", m.AuthorizationMiddleware(s.ErrorEventRouter))
+	})
+	s.Router.Route("/api/account_info", func(r chi.Router) {
+		r.Put("/", m.AuthorizationMiddleware(s.AccountInfoRouter))
+		r.Route("/user/{userID}", func(r chi.Router) {
+			r.Get("/", m.AuthorizationMiddleware(s.AccountInfoRouter))
+		})
 	})
 }

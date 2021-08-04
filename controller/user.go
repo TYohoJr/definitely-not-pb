@@ -64,6 +64,30 @@ func (s *Server) handleCreateNewUser(user model.AppUser) LoginResult {
 		result.ErrorMessage = &errStr
 		return result
 	}
+	acctType, err := s.DB.GetAccountTypeByType(defaultAcctType)
+	if err != nil {
+		errStr := err.Error()
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
+	if acctType == nil {
+		errStr := "failed to find default account type"
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
+	acctInfo := model.AccountInfo{
+		AppUserID:     user.ID,
+		AccountTypeID: acctType.ID,
+	}
+	err = s.DB.CreateAccountInfo(&acctInfo)
+	if err != nil {
+		errStr := err.Error()
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
 	return result
 }
 
