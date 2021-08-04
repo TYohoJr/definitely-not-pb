@@ -167,23 +167,24 @@ class PhotosPage extends Component {
                     app_user_id: this.props.appUserID,
                     name: file.name,
                     description: this.state.selectedFileDescription,
+                    file_type: ""
                 }
                 await fetch("/api/photo/file_name/" + encodeURIComponent(file.name), {
                     method: "POST",
                     headers: {
-                        "content-type": "application/json",
                         "Authorization": `Bearer ${token}`,
                     },
                     body: file
                 }).then(async (resp) => {
-                    if (resp.status !== 204) {
+                    if (resp.status !== 201) {
                         let errorMsg = await resp.text();
                         this.props.displayError(errorMsg, true);
                     } else {
+                        photoData.file_type = await resp.text();
                         await fetch("/api/photo", {
                             method: "PUT",
                             headers: {
-                                "content-type": "application/json",
+                                "Content-Type": "application/json",
                                 "Authorization": `Bearer ${token}`,
                             },
                             body: JSON.stringify(photoData)
@@ -373,7 +374,7 @@ class PhotosPage extends Component {
                     >
                         <Modal.Body>
                             <div className="view-photo-container">
-                                <img className="view-photo-img" src={this.state.selectedPhotoURL} />
+                                <img className="view-photo-img" alt="" src={this.state.selectedPhotoURL} />
                             </div>
                         </Modal.Body>
                         <Modal.Footer>
