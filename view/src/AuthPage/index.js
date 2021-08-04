@@ -79,7 +79,7 @@ class AuthPage extends Component {
                         this.setState({ loginError: respJSON.error_message })
                     } else {
                         this.setState({ loginError: "" })
-                        this.props.setLoggedIn(respJSON.app_user_id)
+                        this.props.setLoggedIn(respJSON.app_user_id, respJSON.response)
                     }
                 }
             }).finally(() => {
@@ -208,7 +208,8 @@ class AuthPage extends Component {
                 } else {
                     let respJSON = await resp.json();
                     if (respJSON.is_error) {
-                        console.error(respJSON.error_message)
+                        let errorMsg = await resp.text();
+                        this.props.displayError(errorMsg, true);
                     } else {
                         this.resetAuthPage()
                     }

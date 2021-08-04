@@ -31,10 +31,12 @@ class PhotosPage extends Component {
     }
 
     handleShowChooseAlbum = async (photo) => {
+        const token = localStorage.getItem('token');
         await fetch("/api/album/photo/" + encodeURIComponent(photo.id), {
             method: "GET",
             headers: {
                 "content-type": "application/json",
+                "Authorization": `Bearer ${token}`,
             }
         }).then(async (resp) => {
             if (resp.status !== 200) {
@@ -64,10 +66,12 @@ class PhotosPage extends Component {
     }
 
     getPhotos = async () => {
+        const token = localStorage.getItem('token');
         await fetch("/api/photo/user/" + encodeURIComponent(this.props.appUserID), {
             method: "GET",
             headers: {
                 "content-type": "application/json",
+                "Authorization": `Bearer ${token}`,
             }
         }).then(async (resp) => {
             if (resp.status !== 200) {
@@ -82,10 +86,12 @@ class PhotosPage extends Component {
 
     deletePhoto = async (photoID, i) => {
         this.setState({ isLoadingIndex: i, isLoading: true }, async () => {
+            const token = localStorage.getItem('token');
             await fetch("/api/photo/id/" + encodeURIComponent(photoID), {
                 method: "DELETE",
                 headers: {
                     "content-type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 }
             }).then(async (resp) => {
                 if (resp.status !== 204) {
@@ -102,10 +108,12 @@ class PhotosPage extends Component {
 
     viewPhoto = async (photo, i) => {
         this.setState({ isLoadingIndex: i, isLoading: true }, async () => {
+            const token = localStorage.getItem('token');
             await fetch("/api/photo/id/" + encodeURIComponent(photo.id), {
                 method: "GET",
                 headers: {
                     "content-type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 }
             }).then(async (resp) => {
                 if (resp.status !== 200) {
@@ -127,6 +135,7 @@ class PhotosPage extends Component {
         if (!this.state.photoToAddToAlbum || !this.state.selectedAlbum) {
             return
         }
+        const token = localStorage.getItem('token');
         let albumPhotoData = {
             album_id: this.state.selectedAlbum.id,
             photo_id: this.state.photoToAddToAlbum.id
@@ -135,6 +144,7 @@ class PhotosPage extends Component {
             method: "POST",
             headers: {
                 "content-type": "application/json",
+                "Authorization": `Bearer ${token}`,
             },
             body: JSON.stringify(albumPhotoData)
         }).then(async (resp) => {
@@ -152,6 +162,7 @@ class PhotosPage extends Component {
     uploadPhoto = async (file) => {
         if (file) {
             this.setState({ isLoading: true }, async () => {
+                const token = localStorage.getItem('token');
                 let photoData = {
                     app_user_id: this.props.appUserID,
                     name: file.name,
@@ -161,6 +172,7 @@ class PhotosPage extends Component {
                     method: "POST",
                     headers: {
                         "content-type": "application/json",
+                        "Authorization": `Bearer ${token}`,
                     },
                     body: file
                 }).then(async (resp) => {
@@ -172,6 +184,7 @@ class PhotosPage extends Component {
                             method: "PUT",
                             headers: {
                                 "content-type": "application/json",
+                                "Authorization": `Bearer ${token}`,
                             },
                             body: JSON.stringify(photoData)
                         }).then(async (resp) => {
