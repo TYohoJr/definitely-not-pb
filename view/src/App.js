@@ -6,6 +6,9 @@ import PhotosPage from './PhotosPage';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import Navbar from 'react-bootstrap/Navbar';
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -14,20 +17,24 @@ class App extends Component {
     super()
     this.state = {
       isLoggedIn: false,
-      showAlbumsPage: false,
-      showPhotosPage: false,
       appUserID: 0,
       albums: [],
       showError: false,
       errorMsg: "",
       isUnknownError: true,
       userErrorDescription: "",
+      showAuthModal: false,
+      pageToShow: "home",
     }
   }
 
   setLoggedIn = async (userID, token) => {
     localStorage.setItem('token', token);
-    this.setState({ appUserID: userID, isLoggedIn: true })
+    this.setState({
+      appUserID: userID,
+      isLoggedIn: true,
+      showAuthModal: false,
+    })
   }
 
   setLoggedOut = async () => {
@@ -36,21 +43,13 @@ class App extends Component {
       appUserID: 0,
       isLoggedIn: false,
       albums: [],
-      showAlbumsPage: false,
-      showPhotosPage: false,
+      pageToShow: "home",
+      showAuthModal: false,
     })
   }
 
-  showAlbumsPage = async () => {
-    this.setState({ showAlbumsPage: true })
-  }
-
-  showPhotosPage = async () => {
-    this.setState({ showPhotosPage: true })
-  }
-
-  goBackToHomePage = async () => {
-    this.setState({ showAlbumsPage: false, showPhotosPage: false })
+  showPage = async (page) => {
+    this.setState({ pageToShow: page })
   }
 
   getAlbums = async () => {
@@ -117,46 +116,94 @@ class App extends Component {
     });
     return (
       <div className="App">
-        {this.state.isLoggedIn && !this.state.showAlbumsPage && !this.state.showPhotosPage ?
-          <HomePage
-            appUserID={this.state.appUserID}
-            showAlbumsPage={this.showAlbumsPage}
-            showPhotosPage={this.showPhotosPage}
-            displayError={this.displayError}
-          />
+        <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+          <Container>
+            <Navbar.Brand
+              onClick={() => this.showPage("home")}
+            >Def Not PB</Navbar.Brand>
+            <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+            <Navbar.Collapse id="responsive-navbar-nav">
+              <Nav className="me-auto">
+                {this.state.isLoggedIn ?
+                  <Container>
+                    <Nav.Link
+                      onClick={() => this.showPage("albums")}
+                    >Albums</Nav.Link>
+                    <Nav.Link
+                      onClick={() => this.showPage("photos")}
+                    >Photos</Nav.Link>
+                  </Container>
+                  :
+                  null
+                }
+              </Nav>
+              <Nav>
+                {this.state.isLoggedIn ?
+                  <Container>
+                    <Nav.Link
+                      onClick={() => console.log("Opening account modal")}
+                    >Account</Nav.Link>
+                    <Nav.Link
+                      onClick={this.setLoggedOut}
+                    >Logout</Nav.Link>
+                  </Container>
+                  :
+                  <Nav.Link
+                    onClick={() => this.setState({ showAuthModal: true })}
+                  >Sign In/Register</Nav.Link>
+                }
+              </Nav>
+            </Navbar.Collapse>
+          </Container>
+        </Navbar>
+        {this.state.pageToShow === "home" ?
+          this.state.isLoggedIn ?
+            <HomePage
+              appUserID={this.state.appUserID}
+              displayError={this.displayError}
+            />
+            :
+            <p>Not logged in content page</p>
           :
           null
         }
-        {!this.state.isLoggedIn ?
-          <AuthPage
-            isLoggedIn={this.state.isLoggedIn}
-            setLoggedIn={this.setLoggedIn}
-            displayError={this.displayError}
-          />
-          :
-          null
-        }
-        {this.state.showAlbumsPage ?
+        {this.state.pageToShow === "albums" ?
           <AlbumsPage
             appUserID={this.state.appUserID}
-            goBackToHomePage={this.goBackToHomePage}
             albums={this.state.albums}
             getAlbums={this.getAlbums}
-            logOut={this.setLoggedOut}
             displayError={this.displayError}
           />
           :
           null
         }
-        {this.state.showPhotosPage ?
+        {this.state.pageToShow === "photos" ?
           <PhotosPage
             appUserID={this.state.appUserID}
-            goBackToHomePage={this.goBackToHomePage}
             albums={this.state.albums}
-            logOut={this.setLoggedOut}
             getAlbums={this.getAlbums}
             displayError={this.displayError}
           />
+          :
+          null
+        }
+        {this.state.showAuthModal ?
+          <Modal
+            show={true}
+            size="lg"
+            aria-labelledby="contained-modal-title-vcenter"
+            centered
+            backdrop="static"
+          >
+            <Modal.Body>
+              <AuthPage
+                isLoggedIn={this.state.isLoggedIn}
+                setLoggedIn={this.setLoggedIn}
+                setLoggedOut={this.setLoggedOut}
+                displayError={this.displayError}
+              />
+            </Modal.Body>
+          </Modal>
           :
           null
         }

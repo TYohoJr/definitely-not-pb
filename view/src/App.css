@@ -40,3 +40,11 @@
 h4 {
   overflow-wrap: anywhere;
 }
+
+.top-btn {
+  margin: 5px;
+}
+
+.modal.show .modal-dialog {
+  width: fit-content;
+}

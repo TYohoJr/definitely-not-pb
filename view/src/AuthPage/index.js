@@ -188,7 +188,7 @@ class AuthPage extends Component {
         if (!this.state.isLowercasePassword || !this.state.isUppercasePassword || !this.state.isNumberPassword || !this.state.passwordsMatch || !this.state.isValidUsername || !this.state.newUsername || !this.state.secretQuestionPickID || !this.state.secretQuestionAnswer) {
             return
         }
-        this.setState({isLoading: true}, async () => {
+        this.setState({ isLoading: true }, async () => {
             let userData = {
                 username: this.state.newUsername,
                 password: this.state.newPassword,
@@ -258,7 +258,7 @@ class AuthPage extends Component {
                                 :
                                 <span>
                                     <Button
-                                        variant="secondary"
+                                        variant="warning"
                                         type="button"
                                         onClick={() => this.setState({ isRegistering: true })}
                                     >
@@ -270,6 +270,13 @@ class AuthPage extends Component {
                                         onClick={() => this.logIn(this.state.username, this.state.password)}
                                     >
                                         Submit
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        type="button"
+                                        onClick={this.props.setLoggedOut}
+                                    >
+                                        Return
                                     </Button>
                                 </span>
                             }
@@ -303,7 +310,7 @@ class AuthPage extends Component {
                                     value={this.state.newPassword}
                                 />
                                 <Form.Text className="text-muted">
-                                    <ul className="pass-req-list">
+                                    <ul className="pass-req-list input-warning">
                                         {this.state.isLowercasePassword ?
                                             <li className="req-met">Must contain a lowercase letter</li>
                                             :

@@ -1,5 +1,7 @@
 .req-not-met {
     color: red;
+    padding: inherit;
+    text-align: center;
 }
 
 .req-met {
@@ -13,4 +15,9 @@
 
 .pass-req-list {
     list-style-type: none;
+}
+
+.input-warning {
+    padding: inherit;
+    text-align: center;
 }

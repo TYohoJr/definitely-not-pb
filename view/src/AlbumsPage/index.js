@@ -190,16 +190,10 @@ class AlbumsPage extends Component {
                     <Button
                         variant="primary"
                         type="button"
+                        className="top-btn"
                         onClick={() => this.setState({ isCreatingNewAlbum: true })}
                     >
                         Create New Album
-                    </Button>
-                    <Button
-                        variant="secondary"
-                        type="button"
-                        onClick={this.props.goBackToHomePage}
-                    >
-                        Go Back Home
                     </Button>
                 </div>
                 {this.state.isCreatingNewAlbum ?
@@ -220,7 +214,7 @@ class AlbumsPage extends Component {
                                     value={this.state.newAlbumName}
                                 />
                                 <Form.Text className="text-muted">
-                                    <ul className="pass-req-list">
+                                    <ul className="pass-req-list input-warning">
                                         {!this.state.newAlbumName ?
                                             <li className="req-not-met">Album name cannot be empty</li>
                                             :
