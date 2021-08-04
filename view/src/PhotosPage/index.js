@@ -228,14 +228,6 @@ class PhotosPage extends Component {
                     >
                         Upload Photo
                     </Button>
-                    <Button
-                        variant="secondary"
-                        type="button"
-                        className="top-btn"
-                        onClick={this.props.goBackToHomePage}
-                    >
-                        Go Back
-                    </Button>
                 </div>
                 <Container>
                     {this.state.photos.map((photo, i) => {
