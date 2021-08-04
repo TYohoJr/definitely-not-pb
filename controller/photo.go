@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -65,8 +66,15 @@ func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("failed to copy file: %v", err.Error()), 500)
 			return
 		}
-		w.WriteHeader(204)
+		contentType := r.Header.Get("Content-Type")
+		err = s.verifyContentType(contentType)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("file failed validation: %v", err.Error()), 500)
+			return
+		}
+		w.WriteHeader(201)
 		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(contentType))
 		return
 	case "PUT": // Upload/Create new photo that was previously POSTed to server
 		createPhoto := model.Photo{}
@@ -143,12 +151,15 @@ func (s *Server) handleCreateNewPhoto(photo model.Photo) error {
 	if err != nil {
 		return err
 	}
-	contentType, err := GetFileContentType(*photo.Name)
+	bucket := bucketName
+	fType, err := s.DB.GetFileTypeByName(*photo.FileType)
 	if err != nil {
 		return err
 	}
-	bucket := bucketName
-	photo.FileType = contentType
+	if fType == nil {
+		return errors.New("invalid file type")
+	}
+	photo.FileTypeID = fType.ID
 	photo.S3Bucket = &bucket
 	photo.S3Key = &objKey
 	err = s.DB.CreatePhoto(&photo)
@@ -250,17 +261,13 @@ func (s *Server) uploadObject(bucketName string, objKey string, filename string)
 	return nil
 }
 
-func GetFileContentType(filename string) (*string, error) {
-	f, err := os.Open(filename)
+func (s *Server) verifyContentType(contentType string) error {
+	fType, err := s.DB.GetFileTypeByName(contentType)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	defer f.Close()
-	buffer := make([]byte, 512)
-	_, err = f.Read(buffer)
-	if err != nil {
-		return nil, err
+	if fType == nil {
+		return errors.New("invalid file type")
 	}
-	contentType := http.DetectContentType(buffer)
-	return &contentType, nil
+	return nil
 }
