@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/go-chi/chi"
+	"github.com/gofrs/uuid"
 )
 
 func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
@@ -146,8 +147,13 @@ func (s *Server) PhotoUserRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleCreateNewPhoto(photo model.Photo) error {
-	objKey := fmt.Sprintf("users/%v/photos/%v", *photo.AppUserID, *photo.Name)
-	err := s.uploadObject(bucketName, objKey, *photo.Name)
+	objUUID, err := uuid.NewV1()
+	if err != nil {
+		return err
+	}
+	uniqueObjKey := fmt.Sprintf("%s-%s", objUUID.String(), *photo.Name)
+	objKey := fmt.Sprintf("users/%v/photos/%v", *photo.AppUserID, uniqueObjKey)
+	err = s.uploadObject(bucketName, objKey, *photo.Name)
 	if err != nil {
 		return err
 	}
