@@ -98,4 +98,10 @@ func (s *Server) initializeRoutes() {
 			r.Get("/", m.AuthorizationMiddleware(s.AccountInfoRouter))
 		})
 	})
+	s.Router.Route("/api/two_fa", func(r chi.Router) {
+		r.Put("/", m.AuthorizationMiddleware(s.TwoFARouter))
+		r.Route("/user/{userID}", func(r chi.Router) {
+			r.Post("/", m.AuthorizationMiddleware(s.TwoFARouter))
+		})
+	})
 }

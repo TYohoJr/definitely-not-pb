@@ -7,6 +7,7 @@ class AccountPage extends Component {
     constructor(props) {
         super(props)
         this.state = {
+            current_email: null,
             email: "",
             is_email_confirmed: false,
             account_type: "",
@@ -59,12 +60,58 @@ class AccountPage extends Component {
     }
 
     send2faCode = async () => {
-        this.setState({ isConfirmingEmail: true })
+        this.setState({ isLoading: true }, async () => {
+            const token = localStorage.getItem('token');
+            await fetch("/api/two_fa/user/" + encodeURIComponent(this.props.appUserID), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+            }).then(async (resp) => {
+                if (resp.status !== 204) {
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg, true);
+                } else {
+                    this.setState({ isConfirmingEmail: true });
+                }
+            }).finally(() => {
+                this.setState({ isLoading: false });
+            });
+        });
     }
 
     confirm2faCode = async () => {
-        this.setState({ isConfirmingEmail: false })
-        this.getAccountInfo()
+        this.setState({ isLoading: true }, async () => {
+            const token = localStorage.getItem('token');
+            let accountInfo = {
+                app_user_id: this.props.appUserID,
+                twofa_code: this.state.twofa_code,
+            }
+            await fetch("/api/two_fa", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(accountInfo)
+            }).then(async (resp) => {
+                if (resp.status !== 200) {
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg, true);
+                } else {
+                    let respTxt = await resp.text();
+                    if (respTxt === "failed") {
+                        this.setState({ twofa_error: "Incorrect code" });
+                    } else if (respTxt === "matched") {
+                        this.setState({ isConfirmingEmail: false, isLoading: false })
+                        this.getAccountInfo()
+                    }
+                }
+            }).finally(() => {
+                this.setState({ isLoading: false });
+            });
+        });
     }
 
     getAccountInfo = async () => {
@@ -83,6 +130,7 @@ class AccountPage extends Component {
                 let respJSON = await resp.json();
                 this.setState({
                     email: respJSON.email,
+                    current_email: respJSON.email,
                     is_email_confirmed: respJSON.is_email_confirmed,
                     account_type: respJSON.account_type,
                 })
@@ -126,7 +174,8 @@ class AccountPage extends Component {
                 <div>
                     <Form>
                         <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label>Email</Form.Label>
+                            <Form.Label>Email&ensp;</Form.Label>
+                            {this.state.is_email_confirmed ? <span class="badge rounded-pill bg-success">Confirmed</span> : <span class="badge rounded-pill bg-danger">Unconmfirmed</span>}
                             <Form.Control
                                 type="text"
                                 placeholder="Email"
@@ -156,17 +205,20 @@ class AccountPage extends Component {
                                         <br />
                                     </span>
                                     :
-                                    <span>
-                                        <Button
-                                            variant="primary"
-                                            type="button"
-                                            onClick={this.send2faCode}
-                                        >
-                                            Send Confirmation Email
-                                        </Button>
-                                        <br />
-                                        <br />
-                                    </span>
+                                    !this.state.isLoading && this.state.current_email !== null ?
+                                        <span>
+                                            <Button
+                                                variant="primary"
+                                                type="button"
+                                                onClick={this.send2faCode}
+                                            >
+                                                Send Confirmation Email
+                                            </Button>
+                                            <br />
+                                            <br />
+                                        </span>
+                                        :
+                                        null
                                 }
                                 {this.state.isConfirmingEmail ?
                                     <Form.Group className="mb-3" controlId="formBasicPassword">
@@ -198,17 +250,7 @@ class AccountPage extends Component {
                                 }
                             </span>
                             :
-                            <span>
-                                <Button
-                                    variant="secondary"
-                                    type="button"
-                                    disabled={true}
-                                >
-                                    Email Already Confirmed
-                                </Button>
-                                <br />
-                                <br />
-                            </span>
+                            null
                         }
                         {this.state.isLoading ?
                             <Spinner animation="border" role="status">
@@ -222,7 +264,7 @@ class AccountPage extends Component {
                                         type="button"
                                         onClick={this.confirm2faCode}
                                     >
-                                        Confirm
+                                        Confirm Code
                                     </Button>
                                     :
                                     <Button
