@@ -21,7 +21,7 @@ class PhotosPage extends Component {
             selectedPhotoAlbumIDs: [],
             showChooseAlbum: false,
             isLoading: false,
-            isLoadingIndex: -1,
+            selectedPhoto: null,
         }
     }
 
@@ -61,6 +61,10 @@ class PhotosPage extends Component {
         this.setState({ selectedFileDescription: e.target.value })
     }
 
+    closeUploadModal = () => {
+        this.setState({ showUpload: false, selectedFile: null, selectedFileDescription: "" })
+    }
+
     handleChooseAlbumChange = (e) => {
         this.setState({ selectedAlbum: this.props.albums[e.target.value] })
     }
@@ -79,13 +83,23 @@ class PhotosPage extends Component {
                 this.props.displayError(errorMsg, true);
             } else {
                 let respJSON = await resp.json();
-                this.setState({ photos: respJSON })
+                this.setState({ photos: [] }, async () => {
+                    for (let i = 0; i < respJSON.length; i++) {
+                        let photos = this.state.photos
+                        console.log("loaded photo", respJSON[i])
+                        let url = await this.getPhotoURL(respJSON[i]);
+                        var obj = respJSON[i];
+                        obj.photo_url = url
+                        photos.push(obj)
+                        this.setState({ photos: photos })
+                    }
+                })
             }
         })
     }
 
-    deletePhoto = async (photoID, i) => {
-        this.setState({ isLoadingIndex: i, isLoading: true }, async () => {
+    deletePhoto = async (photoID) => {
+        this.setState({ isLoading: true }, async () => {
             const token = localStorage.getItem('token');
             await fetch("/api/photo/id/" + encodeURIComponent(photoID), {
                 method: "DELETE",
@@ -101,13 +115,13 @@ class PhotosPage extends Component {
                     await this.getPhotos()
                 }
             }).finally(() => {
-                this.setState({ isLoadingIndex: -1, isLoading: false });
+                this.setState({ isLoading: false, showPicture: false });
             });
         })
     }
 
-    viewPhoto = async (photo, i) => {
-        this.setState({ isLoadingIndex: i, isLoading: true }, async () => {
+    viewPhoto = async (photo) => {
+        this.setState({ isLoading: true, selectedPhoto: photo }, async () => {
             const token = localStorage.getItem('token');
             await fetch("/api/photo/id/" + encodeURIComponent(photo.id), {
                 method: "GET",
@@ -126,9 +140,29 @@ class PhotosPage extends Component {
                     })
                 }
             }).finally(() => {
-                this.setState({ isLoadingIndex: -1, isLoading: false });
+                this.setState({ isLoading: false });
             });
         })
+    }
+
+    getPhotoURL = async (photo) => {
+        const token = localStorage.getItem('token');
+        return await fetch("/api/photo/id/" + encodeURIComponent(photo.id), {
+            method: "GET",
+            headers: {
+                "content-type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            }
+        }).then(async (resp) => {
+            let url = ""
+            if (resp.status === 200) {
+                url = await resp.json();
+            } else {
+                let respErr = await resp.text();
+                console.log("error: ", respErr)
+            }
+            return url
+        });
     }
 
     addPhotoToAlbum = async () => {
@@ -204,7 +238,7 @@ class PhotosPage extends Component {
                         });
                     }
                 }).finally(() => {
-                    this.setState({ isLoadingIndex: -1, isLoading: false });
+                    this.setState({ isLoading: false });
                 });
             })
         }
@@ -223,7 +257,7 @@ class PhotosPage extends Component {
                     <Button
                         variant="primary"
                         type="button"
-                        className="top-btn"
+                        className="top-btn upload-btn"
                         onClick={() => this.setState({ showUpload: true })}
                     >
                         Upload Photo
@@ -236,42 +270,27 @@ class PhotosPage extends Component {
                                 bg="Light"
                                 key={i}
                                 text="dark"
-                                style={{ width: '18rem' }}
+                                style={{
+                                    width: '18rem',
+                                    height: '18rem',
+                                    backgroundImage: `url(${photo.photo_url})`,
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                }}
                                 className="mb-2"
                             >
                                 <Card.Body>
-                                    <Card.Title>{photo.name}</Card.Title>
-                                    <Card.Text>{photo.description}</Card.Text>
-                                    {this.state.isLoading && this.state.isLoadingIndex === i ?
-                                        <Spinner animation="border" role="status">
-                                            <span className="visually-hidden">Loading...</span>
-                                        </Spinner>
-                                        :
-                                        <span>
-                                            <Button
-                                                variant="primary"
-                                                type="button"
-                                                onClick={() => this.viewPhoto(photo, i)}
-                                            >
-                                                View
-                                            </Button>
-                                            <Button
-                                                variant="success"
-                                                type="button"
-                                                onClick={() => this.handleShowChooseAlbum(photo)}
-                                            >
-                                                Add To Album
-                                            </Button>
-                                            <Button
-                                                variant="danger"
-                                                type="button"
-                                                onClick={() => this.deletePhoto(photo.id, i)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </span>
-                                    }
                                 </Card.Body>
+                                <Card.Footer className="text-muted">
+                                    <Button
+                                        variant="primary"
+                                        type="button"
+                                        onClick={() => this.viewPhoto(photo)}
+                                    >
+                                        Manage
+                                    </Button>
+                                </Card.Footer>
                             </Card>
                         )
                     })}
@@ -311,8 +330,20 @@ class PhotosPage extends Component {
                                 </Spinner>
                                 :
                                 <span>
-                                    <Button variant="success" onClick={() => this.uploadPhoto(this.state.selectedFile)}>Upload</Button>
-                                    <Button variant="danger" onClick={() => this.setState({ showUpload: false })}>Cancel</Button>
+                                    <Button
+                                        variant="success"
+                                        className="float-right"
+                                        onClick={() => this.uploadPhoto(this.state.selectedFile)}
+                                    >
+                                        Upload
+                                    </Button>
+                                    <Button
+                                        variant="danger"
+                                        className="float-left"
+                                        onClick={this.closeUploadModal}
+                                    >
+                                        Cancel
+                                    </Button>
                                 </span>
                             }
                         </Modal.Footer>
@@ -370,7 +401,34 @@ class PhotosPage extends Component {
                             </div>
                         </Modal.Body>
                         <Modal.Footer>
-                            <Button onClick={() => this.setState({ showPicture: false })}>Close</Button>
+                            <span className="photo-details"><b>FileName:</b> {this.state.selectedPhoto.name}<br /><b>Description:</b> {this.state.selectedPhoto.description}</span>
+                            {this.state.isLoading ?
+                                <Spinner animation="border" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </Spinner>
+                                :
+                                <span className="photo-btns-container">
+                                    <Button
+                                        variant="success"
+                                        type="button"
+                                        onClick={() => this.handleShowChooseAlbum(this.state.selectedPhoto)}
+                                    >
+                                        Add To Album
+                                    </Button>{' '}
+                                    <Button
+                                        variant="danger"
+                                        type="button"
+                                        onClick={() => this.deletePhoto(this.state.selectedPhoto.id)}
+                                    >
+                                        Delete
+                                    </Button>{' '}
+                                    <Button
+                                        onClick={() => this.setState({ showPicture: false })}
+                                    >
+                                        Close
+                                    </Button>
+                                </span>
+                            }
                         </Modal.Footer>
                     </Modal>
                     :

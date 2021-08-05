@@ -80,6 +80,10 @@ class App extends Component {
   }
 
   displayError = (msg, isUnknown) => {
+    if (msg.includes("<html>")) {
+      msg = "Uknown error occured"
+      isUnknown = false
+    }
     this.setState({ errorMsg: msg, showError: true, isUnknownError: isUnknown })
   }
 
@@ -241,6 +245,7 @@ class App extends Component {
             aria-labelledby="contained-modal-title-vcenter"
             centered
             backdrop="static"
+            className="error-modal"
           >
             <Modal.Header>
               <Modal.Title>An error has occured</Modal.Title>

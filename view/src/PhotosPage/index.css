@@ -29,3 +29,17 @@
 .upload-form-description-label {
     margin-top: 10px;
 }
+
+.upload-btn {
+    background: linear-gradient(0deg, rgba(222,222,222,1) 0%, rgba(230,230,230,1) 100%);
+    color: #303030;
+    padding: 15px;
+}
+
+.card-footer {
+    border-top: none!important;
+}
+
+.card {
+    margin: 5px;
+}
