@@ -7,7 +7,7 @@ class AccountPage extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            current_email: null,
+            current_email: "",
             email: "",
             is_email_confirmed: false,
             account_type: "",
@@ -101,11 +101,11 @@ class AccountPage extends Component {
                     this.props.displayError(errorMsg, true);
                 } else {
                     let respTxt = await resp.text();
-                    if (respTxt === "failed") {
-                        this.setState({ twofa_error: "Incorrect code" });
-                    } else if (respTxt === "matched") {
+                    if (respTxt === "correct") {
                         this.setState({ isConfirmingEmail: false, isLoading: false })
                         this.getAccountInfo()
+                    } else {
+                        this.setState({ twofa_error: respTxt });
                     }
                 }
             }).finally(() => {
@@ -205,7 +205,7 @@ class AccountPage extends Component {
                                         <br />
                                     </span>
                                     :
-                                    !this.state.isLoading && this.state.current_email !== null ?
+                                    !this.state.isLoading && this.state.current_email ?
                                         <span>
                                             <Button
                                                 variant="primary"
@@ -262,6 +262,7 @@ class AccountPage extends Component {
                                     <Button
                                         variant="success"
                                         type="button"
+                                        className="float-right"
                                         onClick={this.confirm2faCode}
                                     >
                                         Confirm Code
@@ -270,6 +271,7 @@ class AccountPage extends Component {
                                     <Button
                                         variant="success"
                                         type="button"
+                                        className="float-right"
                                         onClick={this.updateAccountInfo}
                                     >
                                         Update
@@ -278,6 +280,7 @@ class AccountPage extends Component {
                                 <Button
                                     variant="secondary"
                                     type="button"
+                                    className="float-left"
                                     onClick={this.props.closeAccountModal}
                                 >
                                     Close

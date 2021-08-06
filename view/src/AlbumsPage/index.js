@@ -239,13 +239,15 @@ class AlbumsPage extends Component {
                                     <Button
                                         variant="secondary"
                                         type="button"
+                                        className="float-left"
                                         onClick={() => this.setState({ newAlbumName: "", isCreatingNewAlbum: false })}
                                     >
                                         Cancel
                                     </Button>
                                     <Button
-                                        variant="primary"
+                                        variant="success"
                                         type="button"
+                                        className="float-right"
                                         onClick={this.createAlbum}
                                     >
                                         Create
@@ -261,14 +263,26 @@ class AlbumsPage extends Component {
                     {this.props.albums.map((album, i) => {
                         return (
                             <Card
-                                bg="Light"
+                                bg="card"
                                 key={i}
                                 text="dark"
-                                style={{ width: '18rem' }}
+                                style={{
+                                    width: '18rem',
+                                }}
                                 className="mb-2"
                             >
-                                <Card.Body>
-                                    <Card.Title>{album.name}</Card.Title>
+                                <Card.Title>{album.name}</Card.Title>
+                                <Card.Body
+                                    style={{
+                                        width: '18rem',
+                                        height: '18rem',
+                                        backgroundImage: `url(${album.photo_url})`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                    }}
+                                />
+                                <Card.Footer>
                                     {this.state.isLoading && this.state.isLoadingIndex === i ?
                                         <Spinner animation="border" role="status">
                                             <span className="visually-hidden">Loading...</span>
@@ -278,6 +292,7 @@ class AlbumsPage extends Component {
                                             <Button
                                                 variant="primary"
                                                 type="button"
+                                                className="float-right"
                                                 onClick={() => this.openAlbum(album.id, i)}
                                             >
                                                 Open
@@ -285,13 +300,17 @@ class AlbumsPage extends Component {
                                             <Button
                                                 variant="danger"
                                                 type="button"
+                                                className="float-left"
                                                 onClick={() => this.deleteAlbum(album.id, i)}
                                             >
-                                                Delete
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                                                </svg>
                                             </Button>
                                         </span>
                                     }
-                                </Card.Body>
+                                </Card.Footer>
                             </Card>
                         )
                     })}

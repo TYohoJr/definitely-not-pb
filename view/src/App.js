@@ -27,6 +27,7 @@ class App extends Component {
       showAuthModal: false,
       showAccountModal: false,
       pageToShow: "home",
+      logOutRequired: false,
     }
   }
 
@@ -47,6 +48,11 @@ class App extends Component {
       albums: [],
       pageToShow: "home",
       showAuthModal: false,
+      showError: false,
+      errorMsg: "",
+      isUnknownError: true,
+      userErrorDescription: "",
+      logOutRequired: false,
     })
   }
 
@@ -74,16 +80,83 @@ class App extends Component {
         this.displayError(errorMsg, true);
       } else {
         let respJSON = await resp.json();
-        this.setState({ albums: respJSON })
+        this.setState({ albums: [] }, async () => {
+          for (let i = 0; i < respJSON.length; i++) {
+            let albums = this.state.albums
+            let albumPhotos = await this.getAlbumPhotos(respJSON[i].id);
+            let url = "https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg"
+            if (albumPhotos.length > 0) {
+              url = await this.getPhotoURL(albumPhotos[0].photo_id)
+            }
+            var obj = respJSON[i];
+            obj.photo_url = url
+            albums.push(obj)
+            this.setState({ albums: albums })
+          }
+        })
       }
     })
   }
 
+  getAlbumPhotos = async (albumID) => {
+    const token = localStorage.getItem('token');
+    return await fetch("/api/album_photo/album/" + encodeURIComponent(albumID), {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      }
+    }).then(async (resp) => {
+      let albumPhotos = []
+      if (resp.status === 200) {
+        albumPhotos = await resp.json();
+      } else {
+        let respErr = await resp.text();
+        console.log("error: ", respErr)
+      }
+      return albumPhotos
+    });
+  }
+
+  getPhotoURL = async (photoID) => {
+    const token = localStorage.getItem('token');
+    return await fetch("/api/photo/id/" + encodeURIComponent(photoID), {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      }
+    }).then(async (resp) => {
+      let url = ""
+      if (resp.status === 200) {
+        url = await resp.json();
+      } else {
+        let respErr = await resp.text();
+        console.log("error: ", respErr)
+      }
+      return url
+    });
+  }
+
   displayError = (msg, isUnknown) => {
-    this.setState({ errorMsg: msg, showError: true, isUnknownError: isUnknown })
+    let msgStr = String(msg).trim()
+    if (msgStr === "signature is invalid") { // token is no longer valid, force logout
+      this.setState({ logOutRequired: true })
+      msgStr = "Session expired, please sign in"
+      isUnknown = false
+    }
+    if (msgStr.includes("<html>") || !msgStr) { // error response from backend contains html and shouldn't be displayed, likely a server timeout or no msg occured
+      msgStr = "Uknown error occured"
+      isUnknown = false
+    }
+    this.setState({ errorMsg: msgStr, showError: true, isUnknownError: isUnknown })
   }
 
   closeError = () => {
+    if (this.state.logOutRequired) {
+      this.setLoggedOut()
+      return
+    }
     this.setState({
       showError: false,
       errorMsg: "",
@@ -241,6 +314,7 @@ class App extends Component {
             aria-labelledby="contained-modal-title-vcenter"
             centered
             backdrop="static"
+            className="error-modal"
           >
             <Modal.Header>
               <Modal.Title>An error has occured</Modal.Title>
