@@ -57,3 +57,29 @@ func (db *DB) DeleteAlbumPhotoByID(albumPhotoID int) error {
 	}
 	return nil
 }
+
+func (db *DB) DeleteAlbumPhotoByPhotoAndAlbumID(albumID int, photoID int) error {
+	_, err := db.Exec(
+		`DELETE
+		FROM album_photo
+		WHERE album_id=$1 AND photo_id=$2`, albumID, photoID)
+	if err != nil {
+		return fmt.Errorf("failed to delete album_photo from db by album_id and photo_id: %v", err)
+	}
+	return nil
+}
+
+func (db *DB) GetAlbumPhotoByPhotoAndAlbumID(albumID int, photoID int) (*AlbumPhoto, error) {
+	albumPhotos := []AlbumPhoto{}
+	err := db.Select(&albumPhotos,
+		`SELECT *
+		FROM album_photo
+		WHERE album_id=$1 AND photo_id=$2`, albumID, photoID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get album_photo by album_id and photo_id from db: %v", err)
+	}
+	if len(albumPhotos) < 1 {
+		return nil, nil
+	}
+	return &albumPhotos[0], nil
+}

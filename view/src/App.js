@@ -110,9 +110,6 @@ class App extends Component {
       let albumPhotos = []
       if (resp.status === 200) {
         albumPhotos = await resp.json();
-      } else {
-        let respErr = await resp.text();
-        console.log("error: ", respErr)
       }
       return albumPhotos
     });
@@ -127,12 +124,9 @@ class App extends Component {
         "Authorization": `Bearer ${token}`,
       }
     }).then(async (resp) => {
-      let url = ""
+      let url = "https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg"
       if (resp.status === 200) {
         url = await resp.json();
-      } else {
-        let respErr = await resp.text();
-        console.log("error: ", respErr)
       }
       return url
     });
@@ -209,10 +203,10 @@ class App extends Component {
                   <Container>
                     <Nav.Link
                       onClick={() => this.showPage("albums")}
-                    >Albums</Nav.Link>
+                    >View Albums</Nav.Link>
                     <Nav.Link
                       onClick={() => this.showPage("photos")}
-                    >Photos</Nav.Link>
+                    >Manage Photos</Nav.Link>
                   </Container>
                   :
                   null
