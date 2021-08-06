@@ -4,7 +4,6 @@ import (
 	"defnotpb/controller/email"
 	"defnotpb/model"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -40,21 +39,17 @@ func (s *Server) TwoFARouter(w http.ResponseWriter, r *http.Request) {
 		acctInfo := model.AccountInfo{}
 		err := json.NewDecoder(r.Body).Decode(&acctInfo)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("failed to decode acctInfo body: %v", err.Error()), 500)
+			http.Error(w, fmt.Sprintf("failed to decode request body: %v", err.Error()), 500)
 			return
 		}
-		matched, err := s.handleVerifyTwoFA(acctInfo)
+		message, err := s.handleVerifyTwoFA(acctInfo)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to verify 2FA code: %v", err.Error()), 500)
 			return
 		}
 		w.WriteHeader(200)
 		w.Header().Set("Content-Type", "application/json")
-		if matched {
-			w.Write([]byte("matched"))
-		} else {
-			w.Write([]byte("failed"))
-		}
+		w.Write([]byte(*message))
 		return
 	}
 }
@@ -70,24 +65,28 @@ func (s *Server) handleCreateNewTwoFA(appUserID int) error {
 	return nil
 }
 
-func (s *Server) handleVerifyTwoFA(acctInfo model.AccountInfo) (bool, error) {
+func (s *Server) handleVerifyTwoFA(acctInfo model.AccountInfo) (*string, error) {
 	ai, err := s.DB.GetAccountInfoByUserID(*acctInfo.AppUserID)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	if ai.TwoFACode == nil || ai.TwoFACodeExpiration == nil { // A code was never generated, send generic failure error message
-		return false, errors.New("failed to verify 2FA code")
+		res := "Incorrect code"
+		return &res, nil
 	}
 	now := time.Now().UTC()
 	if now.After(*ai.TwoFACodeExpiration) { // Code in DB is expired, fail regardless of code sent
-		return false, errors.New("2fa code is expired please generate a new one")
+		res := "Code is expired please generate a new one"
+		return &res, nil
 	}
 	if *ai.TwoFACode != *acctInfo.TwoFACode { // Codes do not match
-		return false, nil
+		res := "Incorrect code"
+		return &res, nil
 	}
 	err = s.DB.UpdateAccountInfoConfirmed(*acctInfo.AppUserID)
 	if err != nil {
-		return false, fmt.Errorf("failed to confirm account email: %v", err)
+		return nil, fmt.Errorf("failed to confirm account email: %v", err)
 	}
-	return true, nil
+	res := "correct"
+	return &res, nil
 }

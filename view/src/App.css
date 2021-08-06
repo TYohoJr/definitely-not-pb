@@ -82,13 +82,14 @@ h4 {
 }
 
 .photo-btns-container {
-    right: 0;
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
-    margin-right: 20px;
+  max-width: 50%;
+  right: 0;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  margin-right: 20px;
 }
 
 .float-right {
@@ -97,4 +98,8 @@ h4 {
 
 .float-left {
   float: left;
+}
+
+.bg-card {
+  background-color: #d0d0d0;
 }
