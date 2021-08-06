@@ -17,11 +17,14 @@ class PhotosPage extends Component {
             selectedFileDescription: "",
             selectedPhotoURL: "",
             photoToAddToAlbum: null,
+            photoToRemoveFromAlbum: null,
             selectedAlbum: null,
             selectedPhotoAlbumIDs: [],
-            showChooseAlbum: false,
+            showChooseAddAlbum: false,
+            showChooseRemoveAlbum: false,
             isLoading: false,
             selectedPhoto: null,
+            alreadyAddedAlbums: [],
         }
     }
 
@@ -30,7 +33,7 @@ class PhotosPage extends Component {
         this.props.getAlbums()
     }
 
-    handleShowChooseAlbum = async (photo) => {
+    handleShowAddChooseAlbum = async (photo) => {
         const token = localStorage.getItem('token');
         await fetch("/api/album/photo/" + encodeURIComponent(photo.id), {
             method: "GET",
@@ -50,7 +53,34 @@ class PhotosPage extends Component {
                 });
                 this.setState({ selectedPhotoAlbumIDs: albumIDs }, () => {
                     this.setState({ photoToAddToAlbum: photo }, () => {
-                        this.setState({ showChooseAlbum: true })
+                        this.setState({ showChooseAddAlbum: true })
+                    })
+                });
+            }
+        });
+    }
+
+    handleShowRemoveChooseAlbum = async (photo) => {
+        const token = localStorage.getItem('token');
+        await fetch("/api/album/photo/" + encodeURIComponent(photo.id), {
+            method: "GET",
+            headers: {
+                "content-type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            }
+        }).then(async (resp) => {
+            if (resp.status !== 200) {
+                let errorMsg = await resp.text();
+                this.props.displayError(errorMsg, true);
+            } else {
+                let respJSON = await resp.json();
+                let albumIDs = []
+                respJSON.forEach((album, i) => {
+                    albumIDs.push(album.id)
+                });
+                this.setState({ selectedPhotoAlbumIDs: albumIDs }, () => {
+                    this.setState({ photoToRemoveFromAlbum: photo }, () => {
+                        this.setState({ showChooseRemoveAlbum: true })
                     })
                 });
             }
@@ -153,12 +183,9 @@ class PhotosPage extends Component {
                 "Authorization": `Bearer ${token}`,
             }
         }).then(async (resp) => {
-            let url = ""
+            let url = "https://www.generationsforpeace.org/wp-content/uploads/2018/03/empty.jpg"
             if (resp.status === 200) {
                 url = await resp.json();
-            } else {
-                let respErr = await resp.text();
-                console.log("error: ", respErr)
             }
             return url
         });
@@ -185,7 +212,35 @@ class PhotosPage extends Component {
                 let errorMsg = await resp.text();
                 this.props.displayError(errorMsg, true);
             } else {
-                this.setState({ showChooseAlbum: false }, () => {
+                this.setState({ showChooseAddAlbum: false }, () => {
+                    this.props.getAlbums()
+                })
+            }
+        });
+    }
+
+    removePhotoToAlbum = async () => {
+        if (!this.state.photoToRemoveFromAlbum || !this.state.selectedAlbum || !this.state.selectedAlbum || !this.state.photoToRemoveFromAlbum){
+            return
+        }
+        const token = localStorage.getItem('token');
+        let albumPhotoData = {
+            album_id: this.state.selectedAlbum.id,
+            photo_id: this.state.photoToRemoveFromAlbum.id
+        }
+        await fetch("/api/album_photo/", {
+            method: "DELETE",
+            headers: {
+                "content-type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify(albumPhotoData)
+        }).then(async (resp) => {
+            if (resp.status !== 204) {
+                let errorMsg = await resp.text();
+                this.props.displayError(errorMsg, true);
+            } else {
+                this.setState({ showChooseRemoveAlbum: false, selectedAlbum: null }, () => {
                     this.props.getAlbums()
                 })
             }
@@ -355,7 +410,7 @@ class PhotosPage extends Component {
                     :
                     null
                 }
-                {this.state.showChooseAlbum ?
+                {this.state.showChooseAddAlbum ?
                     <Modal
                         show={true}
                         size="lg"
@@ -394,7 +449,53 @@ class PhotosPage extends Component {
                             <Button
                                 variant="primary"
                                 className="float-left"
-                                onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseAlbum: false })}
+                                onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseAddAlbum: false })}
+                            >
+                                Close
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+                    :
+                    null
+                }
+                {this.state.showChooseRemoveAlbum ?
+                    <Modal
+                        show={true}
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        centered
+                        backdrop="static"
+                    >
+                        <Modal.Body>
+                            <Form.Group controlId="formFile" className="mb-3">
+                                <Form.Label className="upload-form-label">Photo Name</Form.Label>
+                                <Form.Text>{this.state.photoToAddToAlbum ? this.state.photoToAddToAlbum.name : null}</Form.Text>
+                                <Form.Label className="upload-form-label">Choose Album</Form.Label>
+                                <Form.Control
+                                    onChange={this.handleChooseAlbumChange}
+                                    as="select"
+                                >
+                                    <option disabled selected value="">Select Album</option>
+                                    {this.props.albums.map((album, i) => {
+                                        if (this.state.selectedPhotoAlbumIDs.indexOf(album.id) !== -1) {
+                                            return <option value={i}>{album.name}</option>
+                                        }
+                                    })}
+                                </Form.Control>
+                            </Form.Group>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button
+                                variant="danger"
+                                className="float-right"
+                                onClick={() => this.removePhotoToAlbum()}
+                            >
+                                Remove
+                            </Button>
+                            <Button
+                                variant="primary"
+                                className="float-left"
+                                onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseRemoveAlbum: false })}
                             >
                                 Close
                             </Button>
@@ -445,11 +546,17 @@ class PhotosPage extends Component {
                                         <Button
                                             variant="success"
                                             type="button"
-                                            onClick={() => this.handleShowChooseAlbum(this.state.selectedPhoto)}
+                                            onClick={() => this.handleShowAddChooseAlbum(this.state.selectedPhoto)}
                                         >
                                             Add To Album
                                         </Button>{' '}
-
+                                        <Button
+                                            variant="danger"
+                                            type="button"
+                                            onClick={() => this.handleShowRemoveChooseAlbum(this.state.selectedPhoto)}
+                                        >
+                                            Remove From Album
+                                        </Button>{' '}
                                         <Button
                                             onClick={() => this.setState({ showPicture: false })}
                                         >
