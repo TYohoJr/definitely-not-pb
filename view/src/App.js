@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import AuthPage from './AuthPage'
 import HomePage from './HomePage';
 import AlbumsPage from './AlbumsPage';
@@ -28,6 +28,8 @@ class App extends Component {
       showAccountModal: false,
       pageToShow: "home",
       logOutRequired: false,
+      isRegistering: false,
+      navExpanded: false,
     }
   }
 
@@ -53,6 +55,31 @@ class App extends Component {
       isUnknownError: true,
       userErrorDescription: "",
       logOutRequired: false,
+      isRegistering: false,
+    })
+  }
+
+  showLoginPage = async () => {
+    this.setState({ isRegistering: false }, () => {
+      this.setState({
+        showAuthModal: true
+      })
+    })
+  }
+
+  showRegisterPage = async () => {
+    this.setState({ isRegistering: true }, () => {
+      this.setState({
+        showAuthModal: true
+      })
+    })
+  }
+
+  closeAuthPage = async () => {
+    this.setState({ isRegistering: false }, () => {
+      this.setState({
+        showAuthModal: false
+      })
     })
   }
 
@@ -182,6 +209,18 @@ class App extends Component {
     });
   }
 
+  setNavExpanded = (expanded) => {
+    console.log("expanded?", expanded)
+    this.setState({ navExpanded: expanded });
+  }
+
+  closeNav = (eventKey, syntheticEvent) => {
+    console.log(eventKey)
+    console.log(syntheticEvent)
+    console.log("closing nav")
+    this.setState({ navExpanded: false });
+  }
+
   render() {
     let vw = window.innerWidth * 0.01;
     document.documentElement.style.setProperty('--vw', `${vw}px`);
@@ -195,50 +234,52 @@ class App extends Component {
           <Container>
             <Navbar.Brand
               onClick={() => this.showPage("home")}
-            >Def Not PB</Navbar.Brand>
+            >Definitely Not PB</Navbar.Brand>
             <Navbar.Toggle aria-controls="responsive-navbar-nav" />
             <Navbar.Collapse id="responsive-navbar-nav">
               <Nav className="me-auto">
                 {this.state.isLoggedIn ?
-                  <Container>
+                  <Fragment>
                     <Nav.Link
-                      onClick={() => this.showPage("albums")}
+                      onClick={(e) => this.showPage("albums")}
                     >View Albums</Nav.Link>
                     <Nav.Link
                       onClick={() => this.showPage("photos")}
                     >Manage Photos</Nav.Link>
-                  </Container>
+                  </Fragment>
                   :
                   null
                 }
               </Nav>
               <Nav>
                 {this.state.isLoggedIn ?
-                  <Container>
+                  <Fragment>
                     <Nav.Link
                       onClick={() => this.setState({ showAccountModal: true })}
                     >Account</Nav.Link>
                     <Nav.Link
                       onClick={this.setLoggedOut}
                     >Logout</Nav.Link>
-                  </Container>
+                  </Fragment>
                   :
-                  <Nav.Link
-                    onClick={() => this.setState({ showAuthModal: true })}
-                  >Sign In/Register</Nav.Link>
+                  <Fragment>
+                    <Nav.Link
+                      onClick={this.showLoginPage}
+                    >Login</Nav.Link>
+                    <Nav.Link
+                      onClick={this.showRegisterPage}
+                    >Register</Nav.Link>
+                  </Fragment>
                 }
               </Nav>
             </Navbar.Collapse>
           </Container>
         </Navbar>
         {this.state.pageToShow === "home" ?
-          this.state.isLoggedIn ?
-            <HomePage
-              appUserID={this.state.appUserID}
-              displayError={this.displayError}
-            />
-            :
-            <p>Not logged in content page</p>
+          <HomePage
+            appUserID={this.state.appUserID}
+            displayError={this.displayError}
+          />
           :
           null
         }
@@ -276,6 +317,9 @@ class App extends Component {
                 setLoggedIn={this.setLoggedIn}
                 setLoggedOut={this.setLoggedOut}
                 displayError={this.displayError}
+                isRegistering={this.state.isRegistering}
+                closeAuthPage={this.closeAuthPage}
+                showLoginPage={this.showLoginPage}
               />
             </Modal.Body>
           </Modal>
@@ -318,26 +362,27 @@ class App extends Component {
               <br />
               <br />
               {this.state.isUnknownError ?
-                <span>
+                <Fragment>
                   <Form.Label
                     className="upload-form-label upload-form-description-label"
                   >Description of what you were doing when the error occured:</Form.Label>
                   <Form.Control
                     as="textarea"
+                    required={true}
                     onChange={(e) => this.handleUserErrorDescriptionChange(e)}
                     value={this.state.userErrorDescription}
                   />
-                </span>
+                </Fragment>
                 :
                 null
               }
             </Modal.Body>
             <Modal.Footer>
               {this.state.isUnknownError ?
-                <span>
-                  <Button variant="success" onClick={this.reportError}>Report Error</Button>
+                <Fragment>
+                  <Button variant="success" type="submit" onClick={this.reportError}>Report Error</Button>
                   <Button variant="primary" onClick={this.closeError}>Continue Without Reporting</Button>
-                </span>
+                </Fragment>
                 :
                 <Button variant="primary" onClick={this.closeError}>Ok</Button>
               }

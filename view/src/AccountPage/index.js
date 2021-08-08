@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Spinner from 'react-bootstrap/Spinner';
@@ -179,6 +179,7 @@ class AccountPage extends Component {
                             <Form.Control
                                 type="text"
                                 placeholder="Email"
+                                required={true}
                                 onChange={(e) => this.handleEmailChange(e)}
                                 value={this.state.email}
                             />
@@ -191,9 +192,9 @@ class AccountPage extends Component {
                             }
                         </Form.Group>
                         {!this.state.is_email_confirmed ?
-                            <span>
+                            <Fragment>
                                 {this.state.isConfirmingEmail ?
-                                    <span>
+                                    <Fragment>
                                         <Button
                                             variant="primary"
                                             type="button"
@@ -203,10 +204,10 @@ class AccountPage extends Component {
                                         </Button>
                                         <br />
                                         <br />
-                                    </span>
+                                    </Fragment>
                                     :
                                     !this.state.isLoading && this.state.current_email ?
-                                        <span>
+                                        <Fragment>
                                             <Button
                                                 variant="primary"
                                                 type="button"
@@ -216,7 +217,7 @@ class AccountPage extends Component {
                                             </Button>
                                             <br />
                                             <br />
-                                        </span>
+                                        </Fragment>
                                         :
                                         null
                                 }
@@ -226,6 +227,7 @@ class AccountPage extends Component {
                                         <Form.Control
                                             type="text"
                                             placeholder="2FA Code"
+                                            required={true}
                                             onChange={(e) => this.handle2FACodeChange(e)}
                                             value={this.state.twofa_code}
                                         />
@@ -248,7 +250,7 @@ class AccountPage extends Component {
                                     :
                                     null
                                 }
-                            </span>
+                            </Fragment>
                             :
                             null
                         }
@@ -257,11 +259,11 @@ class AccountPage extends Component {
                                 <span className="visually-hidden">Loading...</span>
                             </Spinner>
                             :
-                            <span>
+                            <Fragment>
                                 {this.state.isConfirmingEmail ?
                                     <Button
                                         variant="success"
-                                        type="button"
+                                        type="submit"
                                         className="float-right"
                                         onClick={this.confirm2faCode}
                                     >
@@ -270,7 +272,7 @@ class AccountPage extends Component {
                                     :
                                     <Button
                                         variant="success"
-                                        type="button"
+                                        type="submit"
                                         className="float-right"
                                         onClick={this.updateAccountInfo}
                                     >
@@ -285,7 +287,7 @@ class AccountPage extends Component {
                                 >
                                     Close
                                 </Button>
-                            </span>
+                            </Fragment>
                         }
                     </Form>
                 </div>

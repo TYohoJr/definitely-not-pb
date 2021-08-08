@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
@@ -235,7 +235,7 @@ class AlbumsPage extends Component {
                                     <span className="visually-hidden">Loading...</span>
                                 </Spinner>
                                 :
-                                <span>
+                                <Fragment>
                                     <Button
                                         variant="secondary"
                                         type="button"
@@ -252,7 +252,7 @@ class AlbumsPage extends Component {
                                     >
                                         Create
                                     </Button>
-                                </span>
+                                </Fragment>
                             }
                         </Modal.Footer>
                     </Modal>
@@ -288,7 +288,7 @@ class AlbumsPage extends Component {
                                             <span className="visually-hidden">Loading...</span>
                                         </Spinner>
                                         :
-                                        <span>
+                                        <Fragment>
                                             <Button // delete
                                                 variant="danger"
                                                 type="button"
@@ -308,7 +308,7 @@ class AlbumsPage extends Component {
                                             >
                                                 Open
                                             </Button>
-                                        </span>
+                                        </Fragment>
                                     }
                                 </Card.Footer>
                             </Card>

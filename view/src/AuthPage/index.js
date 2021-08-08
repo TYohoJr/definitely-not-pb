@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Spinner from 'react-bootstrap/Spinner';
@@ -13,7 +13,6 @@ class AuthPage extends Component {
             newUsername: "",
             newPassword: "",
             newPasswordReEnter: "",
-            isRegistering: false,
             isLowercasePassword: false,
             isUppercasePassword: false,
             isNumberPassword: false,
@@ -43,7 +42,6 @@ class AuthPage extends Component {
             newUsername: "",
             newPassword: "",
             newPasswordReEnter: "",
-            isRegistering: false,
             isLowercasePassword: false,
             isUppercasePassword: false,
             isNumberPassword: false,
@@ -211,7 +209,7 @@ class AuthPage extends Component {
                         let errorMsg = await resp.text();
                         this.props.displayError(errorMsg, true);
                     } else {
-                        this.resetAuthPage()
+                        this.props.showLoginPage()
                     }
                 }
             }).finally(() => {
@@ -223,24 +221,37 @@ class AuthPage extends Component {
     render() {
         return (
             <div className="auth-form-container">
-                {!this.state.isRegistering ?
+                {!this.props.isRegistering ?
                     <div>
                         <Form>
+                            <span className="close-btn-container">
+                                <Button // close
+                                    type="button"
+                                    variant="secondary"
+                                    className="float-right"
+                                    onClick={this.props.closeAuthPage}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
+                                    </svg>
+                                </Button>
+                            </span>
                             <Form.Group className="mb-3" controlId="formBasicEmail">
-                                <Form.Label>Username</Form.Label>
+                                <Form.Label>Username:</Form.Label>
                                 <Form.Control
                                     type="text"
                                     placeholder="Username"
+                                    required={true}
                                     onChange={(e) => this.handleUsernameChange(e)}
                                     value={this.state.username}
                                 />
                             </Form.Group>
-
                             <Form.Group className="mb-3" controlId="formBasicPassword">
-                                <Form.Label>Password</Form.Label>
+                                <Form.Label>Password:</Form.Label>
                                 <Form.Control
                                     type="password"
                                     placeholder="Password"
+                                    required={true}
                                     onChange={(e) => this.handlePasswordChange(e)}
                                     value={this.state.password}
                                 />
@@ -252,44 +263,44 @@ class AuthPage extends Component {
                                 </Form.Text>
                             </Form.Group>
                             {this.state.isLoading ?
-                                <Spinner animation="border" role="status">
+                                <Spinner className="float-center" animation="border" role="status">
                                     <span className="visually-hidden">Loading...</span>
                                 </Spinner>
                                 :
-                                <span>
+                                <Fragment>
                                     <Button
-                                        variant="warning"
-                                        type="button"
-                                        onClick={() => this.setState({ isRegistering: true })}
-                                    >
-                                        Register
-                                    </Button>
-                                    <Button
-                                        variant="primary"
-                                        type="button"
+                                        variant="success"
+                                        type="submit"
+                                        className="float-center"
                                         onClick={() => this.logIn(this.state.username, this.state.password)}
                                     >
-                                        Submit
+                                        Login
                                     </Button>
-                                    <Button
-                                        variant="secondary"
-                                        type="button"
-                                        onClick={this.props.setLoggedOut}
-                                    >
-                                        Return
-                                    </Button>
-                                </span>
+                                </Fragment>
                             }
                         </Form>
                     </div>
                     :
                     <div>
                         <Form>
+                            <span className="close-btn-container">
+                                <Button // close
+                                    type="button"
+                                    variant="secondary"
+                                    className="float-right"
+                                    onClick={this.props.closeAuthPage}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
+                                    </svg>
+                                </Button>
+                            </span>
                             <Form.Group className="mb-3" controlId="formBasicEmail">
-                                <Form.Label>Username</Form.Label>
+                                <Form.Label>Username:</Form.Label>
                                 <Form.Control
                                     type="text"
                                     placeholder="Username"
+                                    required={true}
                                     onChange={(e) => this.handleNewUsernameChange(e)}
                                     value={this.state.newUsername}
                                 />
@@ -300,12 +311,12 @@ class AuthPage extends Component {
                                     }
                                 </Form.Text>
                             </Form.Group>
-
                             <Form.Group className="mb-3" controlId="formBasicPassword">
-                                <Form.Label>Password</Form.Label>
+                                <Form.Label>Password:</Form.Label>
                                 <Form.Control
                                     type="password"
                                     placeholder="Password"
+                                    required={true}
                                     onChange={(e) => this.handleNewPasswordChange(e)}
                                     value={this.state.newPassword}
                                 />
@@ -329,11 +340,12 @@ class AuthPage extends Component {
                                     </ul>
                                 </Form.Text>
                             </Form.Group>
-                            <Form.Group className="mb-3" controlId="formBasicPassword">
-                                <Form.Label>Re-Enter Password</Form.Label>
+                            <Form.Group className="mb-3" controlId="formBasicPasswordReEnter">
+                                <Form.Label>Re-Enter Password:</Form.Label>
                                 <Form.Control
                                     type="password"
                                     placeholder="Re-Enter Password"
+                                    required={true}
                                     onChange={(e) => this.handleNewPasswordReEnterChange(e)}
                                     value={this.state.newPasswordReEnter}
                                 />
@@ -345,9 +357,10 @@ class AuthPage extends Component {
                                 </Form.Text>
                             </Form.Group>
                             <Form.Group className="mb-3" controlId="formBasicQuestion">
-                                <Form.Label>Secret Question</Form.Label>
+                                <Form.Label>Secret Question:</Form.Label>
                                 <Form.Control
                                     onChange={this.handleSecretQuestionChange}
+                                    required={true}
                                     as="select"
                                 >
                                     <option disabled selected value="">Select Question</option>
@@ -357,10 +370,11 @@ class AuthPage extends Component {
                                 </Form.Control>
                             </Form.Group>
                             <Form.Group className="mb-3" controlId="formBasicQuestionAnswer">
-                                <Form.Label>Secret Question Answer</Form.Label>
+                                <Form.Label>Secret Question Answer:</Form.Label>
                                 <Form.Control
-                                    type="email"
+                                    type="text"
                                     placeholder=""
+                                    required={true}
                                     onChange={(e) => this.handleSecretQuestionAnswerChange(e)}
                                 />
                                 <Form.Text className="text-muted">
@@ -371,26 +385,20 @@ class AuthPage extends Component {
                                 </Form.Text>
                             </Form.Group>
                             {this.state.isLoading ?
-                                <Spinner animation="border" role="status">
+                                <Spinner className="float-center" animation="border" role="status">
                                     <span className="visually-hidden">Loading...</span>
                                 </Spinner>
                                 :
-                                <span>
+                                <Fragment>
                                     <Button
-                                        variant="secondary"
-                                        type="button"
-                                        onClick={this.resetAuthPage}
-                                    >
-                                        Return To Login
-                                    </Button>
-                                    <Button
-                                        variant="primary"
-                                        type="button"
+                                        variant="success"
+                                        type="submit"
+                                        className="float-center"
                                         onClick={this.registerUser}
                                     >
                                         Register
                                     </Button>
-                                </span>
+                                </Fragment>
                             }
                         </Form>
                     </div>

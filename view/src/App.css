@@ -2,41 +2,6 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 h4 {
   overflow-wrap: anywhere;
 }
@@ -47,6 +12,7 @@ h4 {
 
 .modal.show .modal-dialog {
   width: fit-content;
+  margin: auto;
 }
 
 .bg-dark {
@@ -63,12 +29,8 @@ h4 {
 
 .view-photo-modal .modal-dialog .modal-content {
   min-width: auto;
-  word-break: break-all;
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .modal-footer {
@@ -76,20 +38,26 @@ h4 {
   position: relative;
 }
 
+.photo-details-footer {
+  display: inline-block;
+}
+
 .photo-details {
-  float: left;
-  max-width: 50%;
+  width: fit-content;
+  display: block;
+  margin: 0 auto;
+  max-width: 75%;
 }
 
 .photo-btns-container {
-  max-width: 50%;
-  right: 0;
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
-  margin-right: 20px;
+  width: 100%;
+  display: block;
+  padding-top: 1px;
+}
+
+.photo-btns-container button {
+  margin: 5px auto;
+  display: block;
 }
 
 .float-right {
@@ -102,4 +70,38 @@ h4 {
 
 .bg-card {
   background-color: #d0d0d0;
+}
+
+.modal-body {
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.nav-link {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.navbar {
+  padding: .5rem;
+}
+
+.modal-content {
+  min-width: max-content;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.float-center {
+  margin: 0 auto;
+  display: block;
+}
+
+.close-btn-container {
+  width: 100%;
+  display: inline-block;
 }
