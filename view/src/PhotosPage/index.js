@@ -149,6 +149,65 @@ class PhotosPage extends Component {
         })
     }
 
+    downloadPhoto = async (photoID) => {
+        this.setState({ isLoading: true }, async () => {
+            const token = localStorage.getItem('token');
+            await fetch("/api/photo/download/id/" + encodeURIComponent(photoID), {
+                method: "GET",
+                headers: {
+                    "content-type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                }
+            }).then(async (resp) => {
+                let respObj
+                if (resp.status !== 200) {
+                    respObj = {
+                        status: resp.status,
+                    }
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg, true);
+                } else {
+                    respObj = {
+                        filename: this.fileNameFromCDHeader(resp.headers.get('Content-Disposition')),
+                        blob: await resp.blob(),
+                        contentType: resp.headers.get("Content-Type"),
+                        status: resp.status,
+                    }
+                }
+                return respObj
+            }).then(async resp => {
+                if (resp.status === 200) {
+                    const newBlob = new Blob([resp.blob], { type: resp.contentType }); // It is necessary to create a new blob object with mime-type explicitly set for all browsers except Chrome, but it works for Chrome too.
+                    if (window.navigator && window.navigator.msSaveOrOpenBlob) { // MS Edge and IE don't allow using a blob object directly as link href, instead it is necessary to use msSaveOrOpenBlob
+                        window.navigator.msSaveOrOpenBlob(newBlob);
+                    } else { // For other browsers: create a link pointing to the ObjectURL containing the blob.
+                        let objURL = window.URL.createObjectURL(newBlob);
+                        let link = document.createElement('a');
+                        link.href = objURL;
+                        link.download = resp.filename;
+                        link.click();
+                        setTimeout(() => { window.URL.revokeObjectURL(objURL); }, 250); // For Firefox it is necessary to delay revoking the ObjectURL.
+                    }
+                }
+            }).finally(() => {
+                this.setState({ isLoading: false });
+            });
+        })
+    }
+
+    fileNameFromCDHeader = (header) => {
+        let contentDispostion = header.split(';');
+        const fileNameToken = `filename=`;
+        let fileName = 'download.pdf';
+        for (let thisValue of contentDispostion) {
+            if (thisValue.trim().indexOf(fileNameToken) === 0) {
+                fileName = decodeURIComponent(thisValue.trim().replace(fileNameToken, ''));
+                break;
+            }
+        }
+        return fileName;
+    };
+
     viewPhoto = async (photo) => {
         this.setState({ isLoading: true, selectedPhoto: photo }, async () => {
             const token = localStorage.getItem('token');
@@ -220,7 +279,7 @@ class PhotosPage extends Component {
     }
 
     removePhotoToAlbum = async () => {
-        if (!this.state.photoToRemoveFromAlbum || !this.state.selectedAlbum || !this.state.selectedAlbum || !this.state.photoToRemoveFromAlbum){
+        if (!this.state.photoToRemoveFromAlbum || !this.state.selectedAlbum || !this.state.selectedAlbum || !this.state.photoToRemoveFromAlbum) {
             return
         }
         const token = localStorage.getItem('token');
@@ -309,7 +368,7 @@ class PhotosPage extends Component {
             <div>
                 <div class="top-btns-container">
                     <Button
-                        variant="primary"
+                        variant="secondary"
                         type="button"
                         className="top-btn upload-btn"
                         onClick={() => this.setState({ showUpload: true })}
@@ -480,6 +539,7 @@ class PhotosPage extends Component {
                                         if (this.state.selectedPhotoAlbumIDs.indexOf(album.id) !== -1) {
                                             return <option value={i}>{album.name}</option>
                                         }
+                                        return null
                                     })}
                                 </Form.Control>
                             </Form.Group>
@@ -512,6 +572,36 @@ class PhotosPage extends Component {
                         className="view-photo-modal"
                         centered
                     >
+                        <Modal.Header>
+                            <Button // delete
+                                variant="danger"
+                                type="button"
+                                className="float-left"
+                                style={{
+                                    marginRight: '1em',
+                                }}
+                                onClick={() => this.deletePhoto(this.state.selectedPhoto.id)}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                                </svg>
+                            </Button>{' '}
+                            <Button // download
+                                variant="success"
+                                type="button"
+                                className="float-right"
+                                style={{
+                                    marginRight: '1em',
+                                }}
+                                onClick={() => this.downloadPhoto(this.state.selectedPhoto.id)}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                </svg>
+                            </Button>{' '}
+                        </Modal.Header>
                         <Modal.Body>
                             <div className="view-photo-container">
                                 <img className="view-photo-img" alt="" src={this.state.selectedPhotoURL} />
@@ -521,26 +611,16 @@ class PhotosPage extends Component {
                             {this.state.isLoading ?
                                 <span>
                                     <span className="photo-details"><b>FileName:</b> {this.state.selectedPhoto.name}<br /><b>Description:</b> {this.state.selectedPhoto.description}</span>
-                                    <Spinner animation="border" role="status">
+                                    <Spinner
+                                        animation="border"
+                                        role="status"
+                                        className="float-right"
+                                    >
                                         <span className="visually-hidden">Loading...</span>
                                     </Spinner>
                                 </span>
                                 :
                                 <span>
-                                    <Button
-                                        variant="danger"
-                                        type="button"
-                                        className="float-left"
-                                        style={{
-                                            marginRight: '1em',
-                                        }}
-                                        onClick={() => this.deletePhoto(this.state.selectedPhoto.id)}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
-                                        </svg>
-                                    </Button>{' '}
                                     <span className="photo-details"><b>FileName:</b> {this.state.selectedPhoto.name}<br /><b>Description:</b> {this.state.selectedPhoto.description}</span>
                                     <span className="photo-btns-container">
                                         <Button

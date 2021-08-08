@@ -8,7 +8,8 @@
 }
 
 .view-photo-img {
-    max-width: 96vw
+    max-width: 96vw;
+    max-height: 75vh;
 }
 
 .view-photo-modal .modal-dialog {
