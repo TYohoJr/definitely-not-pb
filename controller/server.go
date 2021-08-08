@@ -60,6 +60,9 @@ func (s *Server) initializeRoutes() {
 		r.Route("/user/{userID}", func(r chi.Router) {
 			r.Get("/", m.AuthorizationMiddleware(s.PhotoUserRouter))
 		})
+		r.Route("/download/id/{photoID}", func(r chi.Router) {
+			r.Get("/", m.AuthorizationMiddleware(s.PhotoDownloadRouter))
+		})
 		r.Route("/id/{photoID}", func(r chi.Router) {
 			r.Get("/", m.AuthorizationMiddleware(s.PhotoRouter))
 			r.Delete("/", m.AuthorizationMiddleware(s.PhotoRouter))

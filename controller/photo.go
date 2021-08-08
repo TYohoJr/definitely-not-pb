@@ -146,6 +146,34 @@ func (s *Server) PhotoUserRouter(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Server) PhotoDownloadRouter(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET": // Download a photo
+		userIDStr := chi.URLParam(r, "photoID")
+		userIDStr, err := url.QueryUnescape(userIDStr)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		userID, err := strconv.Atoi(userIDStr)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		fileContent, fileName, fileType, err := s.handleDownloadPhoto(userID)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", *fileName))
+		w.Header().Set("Content-Type", *fileType)
+		w.WriteHeader(200)
+		io.Copy(w, fileContent)
+		fileContent.Close()
+		return
+	}
+}
+
 func (s *Server) handleCreateNewPhoto(photo model.Photo) error {
 	objUUID, err := uuid.NewV1()
 	if err != nil {
@@ -181,6 +209,32 @@ func (s *Server) handleGetPhotosByUserID(userID int) ([]model.Photo, error) {
 		return nil, err
 	}
 	return photos, nil
+}
+
+func (s *Server) handleDownloadPhoto(photoID int) (io.ReadCloser, *string, *string, error) {
+	photo, err := s.DB.GetPhotoByID(photoID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if photo == nil {
+		return nil, nil, nil, errors.New("failed to download photo")
+	}
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion),
+	})
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to create new AWS session: %v", err)
+	}
+	svc := s3.New(sess)
+	input := &s3.GetObjectInput{
+		Bucket: aws.String(*photo.S3Bucket),
+		Key:    aws.String(*photo.S3Key),
+	}
+	result, err := svc.GetObject(input)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to call AWS api to GetObject: %v", err)
+	}
+	return result.Body, photo.Name, result.ContentType, nil
 }
 
 func (s *Server) handleGetPhotoByID(photoID int) (*string, error) {
