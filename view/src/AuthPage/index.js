@@ -77,7 +77,7 @@ class AuthPage extends Component {
                         this.setState({ loginError: respJSON.error_message })
                     } else {
                         this.setState({ loginError: "" })
-                        this.props.setLoggedIn(respJSON.app_user_id, respJSON.response)
+                        this.props.setLoggedIn(respJSON.response)
                     }
                 }
             }).finally(() => {

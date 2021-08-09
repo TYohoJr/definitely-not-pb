@@ -32,9 +32,9 @@ func InitializeAuth() error {
 func CreateToken(userID int) (string, error) {
 	claims := Claims{
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * 24).UTC().Unix(),
 			Issuer:    "DNP",
-			IssuedAt:  time.Now().Unix(),
+			IssuedAt:  time.Now().UTC().Unix(),
 		},
 		userID,
 	}
