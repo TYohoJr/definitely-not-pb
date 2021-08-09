@@ -12,7 +12,7 @@ type LoginResult struct {
 	Response     *string `json:"response"`
 	IsError      bool    `json:"is_error"`
 	ErrorMessage *string `json:"error_message"`
-	AppUserId    *int    `json:"app_user_id"`
+	// AppUserId    *int    `json:"app_user_id"`
 }
 
 func (s *Server) LoginRouter(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +61,7 @@ func (s *Server) handleLogin(user model.AppUser) LoginResult {
 		result.ErrorMessage = &errStr
 		return result
 	}
-	result.AppUserId = appUser.ID
+	// result.AppUserId = appUser.ID
 	token, err := auth.CreateToken(*appUser.ID)
 	if err != nil {
 		errStr := err.Error()

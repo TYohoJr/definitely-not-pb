@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"defnotpb/controller/auth"
 	"defnotpb/model"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -84,7 +85,12 @@ func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("failed to decode createPhoto body: %v", err.Error()), 500)
 			return
 		}
-		err = s.handleCreateNewPhoto(createPhoto)
+		userID, err := auth.GetAppUserID(r)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		err = s.handleCreateNewPhoto(createPhoto, userID)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to create new photo: %v", err.Error()), 500)
 			return
@@ -118,13 +124,7 @@ func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
 func (s *Server) PhotoUserRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET": // Get a list of photos by user_id
-		userIDStr := chi.URLParam(r, "userID")
-		userIDStr, err := url.QueryUnescape(userIDStr)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		userID, err := strconv.Atoi(userIDStr)
+		userID, err := auth.GetAppUserID(r)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -149,18 +149,23 @@ func (s *Server) PhotoUserRouter(w http.ResponseWriter, r *http.Request) {
 func (s *Server) PhotoDownloadRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET": // Download a photo
-		userIDStr := chi.URLParam(r, "photoID")
-		userIDStr, err := url.QueryUnescape(userIDStr)
+		photoStr := chi.URLParam(r, "photoID")
+		photoStr, err := url.QueryUnescape(photoStr)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		userID, err := strconv.Atoi(userIDStr)
+		photoID, err := strconv.Atoi(photoStr)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		fileContent, fileName, fileType, err := s.handleDownloadPhoto(userID)
+		userID, err := auth.GetAppUserID(r)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		fileContent, fileName, fileType, err := s.handleDownloadPhoto(photoID, userID)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -174,7 +179,27 @@ func (s *Server) PhotoDownloadRouter(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) handleCreateNewPhoto(photo model.Photo) error {
+func (s *Server) handleCreateNewPhoto(photo model.Photo, userID int) error {
+	acctInfo, err := s.DB.GetAccountInfoByUserID(userID)
+	if err != nil {
+		return err
+	}
+	if acctInfo == nil {
+		return errors.New("failed to find account info")
+	}
+	file, err := os.Open(*photo.Name)
+	if err != nil {
+		return fmt.Errorf("failed to open temp file: %v", err)
+	}
+	fi, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	size := fi.Size()
+	err = s.handleUploadLimit(*acctInfo, size)
+	if err != nil {
+		return err
+	}
 	objUUID, err := uuid.NewV1()
 	if err != nil {
 		return err
@@ -196,6 +221,7 @@ func (s *Server) handleCreateNewPhoto(photo model.Photo) error {
 	photo.FileTypeID = fType.ID
 	photo.S3Bucket = &bucket
 	photo.S3Key = &objKey
+	photo.Size = &size
 	err = s.DB.CreatePhoto(&photo)
 	if err != nil {
 		return err
@@ -211,13 +237,24 @@ func (s *Server) handleGetPhotosByUserID(userID int) ([]model.Photo, error) {
 	return photos, nil
 }
 
-func (s *Server) handleDownloadPhoto(photoID int) (io.ReadCloser, *string, *string, error) {
+func (s *Server) handleDownloadPhoto(photoID int, userID int) (io.ReadCloser, *string, *string, error) {
+	acctInfo, err := s.DB.GetAccountInfoByUserID(userID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if acctInfo == nil {
+		return nil, nil, nil, errors.New("failed to find account info")
+	}
 	photo, err := s.DB.GetPhotoByID(photoID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 	if photo == nil {
 		return nil, nil, nil, errors.New("failed to download photo")
+	}
+	err = s.handleDownloadLimit(*acctInfo, *photo.Size)
+	if err != nil {
+		return nil, nil, nil, err
 	}
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
@@ -328,6 +365,68 @@ func (s *Server) verifyContentType(contentType string) error {
 	}
 	if fType == nil {
 		return errors.New("invalid file type")
+	}
+	return nil
+}
+
+func (s *Server) handleUploadLimit(acctInfo model.AccountInfo, uploadAmt int64) error {
+	dataUsage := model.AccountDataUsage{}
+	currUsage, err := s.DB.GetAccountDataUsageByAccountInfoIDAndCurrentMonth(*acctInfo.ID)
+	if err != nil {
+		return err
+	}
+	if currUsage == nil {
+		dataUsage.AccountInfoID = acctInfo.ID
+		err = s.DB.CreateAccountDataUsageForCurrentMonth(&dataUsage)
+		if err != nil {
+			return err
+		}
+	} else {
+		dataUsage.UploadAmount = currUsage.UploadAmount
+		dataUsage.ID = currUsage.ID
+	}
+	dataLimit, err := s.DB.GetAccountTypeLimitByTypeID(*acctInfo.AccountTypeID)
+	if err != nil {
+		return err
+	}
+	plannedUsage := *dataUsage.UploadAmount + uploadAmt
+	if plannedUsage > *dataLimit.UploadLimit {
+		return errors.New("reached monthly upload limit")
+	}
+	err = s.DB.UpdateAccountDataUsageUploadByID(*dataUsage.ID, plannedUsage)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) handleDownloadLimit(acctInfo model.AccountInfo, downloadAmt int64) error {
+	dataUsage := model.AccountDataUsage{}
+	currUsage, err := s.DB.GetAccountDataUsageByAccountInfoIDAndCurrentMonth(*acctInfo.ID)
+	if err != nil {
+		return err
+	}
+	if currUsage == nil {
+		dataUsage.AccountInfoID = acctInfo.ID
+		err = s.DB.CreateAccountDataUsageForCurrentMonth(&dataUsage)
+		if err != nil {
+			return err
+		}
+	} else {
+		dataUsage.DownloadAmount = currUsage.DownloadAmount
+		dataUsage.ID = currUsage.ID
+	}
+	dataLimit, err := s.DB.GetAccountTypeLimitByTypeID(*acctInfo.AccountTypeID)
+	if err != nil {
+		return err
+	}
+	plannedUsage := *dataUsage.DownloadAmount + downloadAmt
+	if plannedUsage > *dataLimit.DownloadLimit {
+		return errors.New("reached monthly download limit")
+	}
+	err = s.DB.UpdateAccountDataUsageDownloadByID(*dataUsage.ID, plannedUsage)
+	if err != nil {
+		return err
 	}
 	return nil
 }
