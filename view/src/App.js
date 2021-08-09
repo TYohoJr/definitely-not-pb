@@ -10,6 +10,7 @@ import Form from 'react-bootstrap/Form';
 import Navbar from 'react-bootstrap/Navbar';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
+import jwt_decode from "jwt-decode";
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -33,13 +34,41 @@ class App extends Component {
     }
   }
 
-  setLoggedIn = async (userID, token) => {
-    localStorage.setItem('token', token);
-    this.setState({
-      appUserID: userID,
-      isLoggedIn: true,
-      showAuthModal: false,
-    })
+  componentDidMount() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.setLoggedIn(token)
+    }
+  }
+
+  verifyToken = (tkn) => {
+    if (!tkn.iss || tkn.iss !== "DNP") { // wrong issuer
+      this.displayError("invalid token", false)
+      return false
+    }
+    var now = Math.floor(new Date().getTime() / 1000);
+    if (!tkn.exp || now > tkn.exp) { // expired token
+      this.displayError("invalid token", false)
+      return false
+    }
+    if (!tkn.user_id || tkn.user_id < 1) { // missing or invalid user_id
+      this.displayError("invalid token", false)
+      return false
+    }
+    return true
+  }
+
+  setLoggedIn = async (token) => {
+    var decoded = jwt_decode(token);
+    let isValid = this.verifyToken(decoded)
+    if (isValid) {
+      localStorage.setItem('token', token);
+      this.setState({
+        appUserID: decoded.user_id,
+        isLoggedIn: true,
+        showAuthModal: false,
+      })
+    }
   }
 
   setLoggedOut = async () => {
@@ -161,7 +190,7 @@ class App extends Component {
 
   displayError = (msg, isUnknown) => {
     let msgStr = String(msg).trim()
-    if (msgStr === "signature is invalid") { // token is no longer valid, force logout
+    if (msgStr === "signature is invalid" || msgStr === "invalid token") { // token is no longer valid, force logout
       this.setState({ logOutRequired: true })
       msgStr = "Session expired, please sign in"
       isUnknown = false
@@ -207,18 +236,6 @@ class App extends Component {
     }).finally(() => {
       this.closeError()
     });
-  }
-
-  setNavExpanded = (expanded) => {
-    console.log("expanded?", expanded)
-    this.setState({ navExpanded: expanded });
-  }
-
-  closeNav = (eventKey, syntheticEvent) => {
-    console.log(eventKey)
-    console.log(syntheticEvent)
-    console.log("closing nav")
-    this.setState({ navExpanded: false });
   }
 
   render() {
