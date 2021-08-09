@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
 
@@ -57,7 +58,14 @@ func (s *Server) handleCreateNewUser(user model.AppUser) LoginResult {
 	result := LoginResult{
 		IsError: false,
 	}
-	err := s.DB.CreateUser(&user)
+	err := s.validateNewUser(user)
+	if err != nil {
+		errStr := err.Error()
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
+	err = s.DB.CreateUser(&user)
 	if err != nil {
 		errStr := err.Error()
 		result.IsError = true
@@ -89,6 +97,38 @@ func (s *Server) handleCreateNewUser(user model.AppUser) LoginResult {
 		return result
 	}
 	return result
+}
+
+func (s *Server) validateNewUser(user model.AppUser) error {
+	if user.Username == nil {
+		return errors.New("username cannot be empty")
+	}
+	if len(*user.Username) > 50 {
+		return errors.New("username cannot be more than 50 characters")
+	}
+	if user.Password == nil {
+		return errors.New("password cannot be empty")
+	}
+	if len(*user.Password) > 50 {
+		return errors.New("password cannot be more than 50 characters")
+	}
+	if user.SecretQuestionID == nil {
+		return errors.New("invalid secret question")
+	}
+	sq, err := s.DB.GetSecretQuestionByID(*user.SecretQuestionID)
+	if err != nil {
+		return err
+	}
+	if sq == nil {
+		return errors.New("invalid secret question")
+	}
+	if user.SecretQuestionAnswer == nil {
+		return errors.New("secret question answer cannot be empty")
+	}
+	if len(*user.SecretQuestionAnswer) > 50 {
+		return errors.New("secret question answer cannot be more than 50 characters")
+	}
+	return nil
 }
 
 func (s *Server) handleGetUsersByUsername(username string) ([]model.AppUser, error) {

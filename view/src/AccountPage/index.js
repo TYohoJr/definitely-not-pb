@@ -180,6 +180,7 @@ class AccountPage extends Component {
                                 type="text"
                                 placeholder="Email"
                                 required={true}
+                                maxLength={50}
                                 onChange={(e) => this.handleEmailChange(e)}
                                 value={this.state.email}
                             />
@@ -228,6 +229,7 @@ class AccountPage extends Component {
                                             type="text"
                                             placeholder="2FA Code"
                                             required={true}
+                                            maxLength={6}
                                             onChange={(e) => this.handle2FACodeChange(e)}
                                             value={this.state.twofa_code}
                                         />

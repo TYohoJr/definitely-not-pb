@@ -386,6 +386,7 @@ class App extends Component {
                   <Form.Control
                     as="textarea"
                     required={true}
+                    maxLength={500}
                     onChange={(e) => this.handleUserErrorDescriptionChange(e)}
                     value={this.state.userErrorDescription}
                   />

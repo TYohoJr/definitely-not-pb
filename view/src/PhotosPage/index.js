@@ -436,6 +436,7 @@ class PhotosPage extends Component {
                                 <Form.Control
                                     type="text"
                                     placeholder="Optional description of photo"
+                                    maxLength={200}
                                     onChange={(e) => this.handleSelectedFileDescriptionChange(e)}
                                     value={this.state.selectedFileDescription}
                                 />
