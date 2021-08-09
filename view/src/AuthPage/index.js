@@ -242,6 +242,7 @@ class AuthPage extends Component {
                                     type="text"
                                     placeholder="Username"
                                     required={true}
+                                    maxLength={50}
                                     onChange={(e) => this.handleUsernameChange(e)}
                                     value={this.state.username}
                                 />
@@ -252,6 +253,7 @@ class AuthPage extends Component {
                                     type="password"
                                     placeholder="Password"
                                     required={true}
+                                    maxLength={50}
                                     onChange={(e) => this.handlePasswordChange(e)}
                                     value={this.state.password}
                                 />
@@ -301,6 +303,7 @@ class AuthPage extends Component {
                                     type="text"
                                     placeholder="Username"
                                     required={true}
+                                    maxLength={50}
                                     onChange={(e) => this.handleNewUsernameChange(e)}
                                     value={this.state.newUsername}
                                 />
@@ -317,6 +320,7 @@ class AuthPage extends Component {
                                     type="password"
                                     placeholder="Password"
                                     required={true}
+                                    maxLength={50}
                                     onChange={(e) => this.handleNewPasswordChange(e)}
                                     value={this.state.newPassword}
                                 />
@@ -346,6 +350,7 @@ class AuthPage extends Component {
                                     type="password"
                                     placeholder="Re-Enter Password"
                                     required={true}
+                                    maxLength={50}
                                     onChange={(e) => this.handleNewPasswordReEnterChange(e)}
                                     value={this.state.newPasswordReEnter}
                                 />
@@ -375,6 +380,7 @@ class AuthPage extends Component {
                                     type="text"
                                     placeholder=""
                                     required={true}
+                                    maxLength={50}
                                     onChange={(e) => this.handleSecretQuestionAnswerChange(e)}
                                 />
                                 <Form.Text className="text-muted">
