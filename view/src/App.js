@@ -31,6 +31,7 @@ class App extends Component {
       logOutRequired: false,
       isRegistering: false,
       navExpanded: false,
+      acctType: "",
     }
   }
 
@@ -63,11 +64,25 @@ class App extends Component {
     let isValid = this.verifyToken(decoded)
     if (isValid) {
       localStorage.setItem('token', token);
-      this.setState({
-        appUserID: decoded.user_id,
-        isLoggedIn: true,
-        showAuthModal: false,
-      })
+      return await fetch("/api/account_type", {
+        method: "GET",
+        headers: {
+          "content-type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        }
+      }).then(async (resp) => {
+        let acctType = ""
+        if (resp.status === 200) {
+          let acctTypeInfo = await resp.json();
+          acctType = acctTypeInfo.type
+        }
+        this.setState({
+          appUserID: decoded.user_id,
+          isLoggedIn: true,
+          showAuthModal: false,
+          acctType: acctType,
+        })
+      });
     }
   }
 
@@ -123,6 +138,7 @@ class App extends Component {
   }
 
   getAlbums = async () => {
+    console.log(this.state.acctType)
     const token = localStorage.getItem('token');
     await fetch("/api/album/user/" + encodeURIComponent(this.state.appUserID), {
       method: "GET",
@@ -359,6 +375,7 @@ class App extends Component {
                 appUserID={this.state.appUserID}
                 closeAccountModal={this.closeAccountModal}
                 displayError={this.displayError}
+                acctType={this.state.acctType}
               />
             </Modal.Body>
           </Modal>

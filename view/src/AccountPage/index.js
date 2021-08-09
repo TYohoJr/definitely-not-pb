@@ -168,12 +168,17 @@ class AccountPage extends Component {
         })
     }
 
+    capitalizeFirstLetter = (string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
     render() {
         return (
             <div className="auth-form-container">
                 <div>
                     <Form>
                         <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Label className="display-block">Account Type:&ensp;{this.capitalizeFirstLetter(this.props.acctType)}</Form.Label>
                             <Form.Label>Email&ensp;</Form.Label>
                             {this.state.is_email_confirmed ? <span class="badge rounded-pill bg-success">Confirmed</span> : <span class="badge rounded-pill bg-danger">Unconmfirmed</span>}
                             <Form.Control

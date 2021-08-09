@@ -12,10 +12,11 @@ import (
 )
 
 const (
-	serverPort      int    = 8080
-	awsRegion       string = "us-east-1"
-	bucketName      string = "definitely-not-photobucket"
-	defaultAcctType string = "test"
+	serverPort              int    = 8080
+	awsRegion               string = "us-east-1"
+	bucketName              string = "definitely-not-photobucket"
+	defaultAcctType         string = "test"
+	defaultAcctTypeUsername string = "testuser"
 )
 
 type Server struct {
@@ -107,5 +108,8 @@ func (s *Server) initializeRoutes() {
 		r.Route("/user/{userID}", func(r chi.Router) {
 			r.Post("/", m.AuthorizationMiddleware(s.TwoFARouter))
 		})
+	})
+	s.Router.Route("/api/account_type", func(r chi.Router) {
+		r.Get("/", m.AuthorizationMiddleware(s.AccountTypeRouter))
 	})
 }

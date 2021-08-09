@@ -230,6 +230,24 @@ func (s *Server) handleCreateNewPhoto(photo model.Photo, userID int) error {
 }
 
 func (s *Server) handleGetPhotosByUserID(userID int) ([]model.Photo, error) {
+	acctInfo, err := s.DB.GetAccountInfoByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+	if acctInfo == nil {
+		return nil, errors.New("failed to retrieve account info")
+	}
+	acctType, err := s.DB.GetAccountTypeByID(*acctInfo.AccountTypeID)
+	if err != nil {
+		return nil, err
+	}
+	if *acctType.Type == defaultAcctType {
+		defaultAppUser, err := s.DB.GetAppUserByUsername(defaultAcctTypeUsername)
+		if err != nil {
+			return nil, err
+		}
+		userID = *defaultAppUser.ID
+	}
 	photos, err := s.DB.GetPhotosByAppUserID(userID)
 	if err != nil {
 		return nil, err
