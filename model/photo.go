@@ -13,12 +13,13 @@ type Photo struct {
 	Description *string `db:"description" json:"description"`
 	FileTypeID  *int    `db:"file_type_id" json:"file_type_id"`
 	FileType    *string `json:"file_type"`
+	Size        *int64  `db:"size" json:"size"`
 }
 
 func (db *DB) CreatePhoto(p *Photo) error {
 	rows, err := db.NamedQuery(
-		`INSERT INTO photo(name, app_user_id, s3_bucket, s3_key, description, file_type_id) 
-		VALUES (:name, :app_user_id, :s3_bucket, :s3_key, :description, :file_type_id)
+		`INSERT INTO photo(name, app_user_id, s3_bucket, s3_key, description, file_type_id, size) 
+		VALUES (:name, :app_user_id, :s3_bucket, :s3_key, :description, :file_type_id, :size)
 		RETURNING id`, p)
 	if err != nil {
 		return fmt.Errorf("failed to insert photo into db: %v", err)

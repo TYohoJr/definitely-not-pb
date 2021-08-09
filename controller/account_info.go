@@ -1,27 +1,19 @@
 package controller
 
 import (
-	"defnotpb/model"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strconv"
 
-	"github.com/go-chi/chi"
+	"defnotpb/controller/auth"
+	"defnotpb/model"
 )
 
 func (s *Server) AccountInfoRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		userIDStr := chi.URLParam(r, "userID")
-		userIDStr, err := url.QueryUnescape(userIDStr)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		userID, err := strconv.Atoi(userIDStr)
+		userID, err := auth.GetAppUserID(r)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

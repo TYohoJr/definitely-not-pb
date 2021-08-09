@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"defnotpb/controller/auth"
 	"defnotpb/model"
 
 	"github.com/go-chi/chi"
@@ -14,13 +15,7 @@ import (
 func (s *Server) AlbumRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET": // Get a list of albums by user_id
-		userIDStr := chi.URLParam(r, "userID")
-		userIDStr, err := url.QueryUnescape(userIDStr)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		userID, err := strconv.Atoi(userIDStr)
+		userID, err := auth.GetAppUserID(r)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -111,13 +106,7 @@ func (s *Server) AlbumByPhotoRouter(w http.ResponseWriter, r *http.Request) {
 func (s *Server) AlbumCheckRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET": // Get a list(one or none) of albums by user_id and album_name
-		userIDStr := chi.URLParam(r, "userID")
-		userIDStr, err := url.QueryUnescape(userIDStr)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		userID, err := strconv.Atoi(userIDStr)
+		userID, err := auth.GetAppUserID(r)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

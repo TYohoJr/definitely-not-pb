@@ -31,6 +31,7 @@ class App extends Component {
       logOutRequired: false,
       isRegistering: false,
       navExpanded: false,
+      acctType: "",
     }
   }
 
@@ -63,11 +64,25 @@ class App extends Component {
     let isValid = this.verifyToken(decoded)
     if (isValid) {
       localStorage.setItem('token', token);
-      this.setState({
-        appUserID: decoded.user_id,
-        isLoggedIn: true,
-        showAuthModal: false,
-      })
+      return await fetch("/api/account_type", {
+        method: "GET",
+        headers: {
+          "content-type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        }
+      }).then(async (resp) => {
+        let acctType = ""
+        if (resp.status === 200) {
+          let acctTypeInfo = await resp.json();
+          acctType = acctTypeInfo.type
+        }
+        this.setState({
+          appUserID: decoded.user_id,
+          isLoggedIn: true,
+          showAuthModal: false,
+          acctType: acctType,
+        })
+      });
     }
   }
 
@@ -197,6 +212,9 @@ class App extends Component {
     }
     if (msgStr.includes("<html>") || !msgStr) { // error response from backend contains html and shouldn't be displayed, likely a server timeout or no msg occured
       msgStr = "Uknown error occured"
+      isUnknown = false
+    }
+    if (msgStr.includes("reached monthly")) { // error is about reaching a monthly limit, dont need to allow error submit, just display
       isUnknown = false
     }
     this.setState({ errorMsg: msgStr, showError: true, isUnknownError: isUnknown })
@@ -356,6 +374,7 @@ class App extends Component {
                 appUserID={this.state.appUserID}
                 closeAccountModal={this.closeAccountModal}
                 displayError={this.displayError}
+                acctType={this.state.acctType}
               />
             </Modal.Body>
           </Modal>

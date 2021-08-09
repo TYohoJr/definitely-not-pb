@@ -1,28 +1,20 @@
 package controller
 
 import (
-	"defnotpb/controller/email"
-	"defnotpb/model"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strconv"
 	"time"
 
-	"github.com/go-chi/chi"
+	"defnotpb/controller/auth"
+	"defnotpb/controller/email"
+	"defnotpb/model"
 )
 
 func (s *Server) TwoFARouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
-		userIDStr := chi.URLParam(r, "userID")
-		userIDStr, err := url.QueryUnescape(userIDStr)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		userID, err := strconv.Atoi(userIDStr)
+		userID, err := auth.GetAppUserID(r)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

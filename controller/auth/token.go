@@ -71,3 +71,16 @@ func extractToken(r *http.Request) string {
 	}
 	return ""
 }
+
+func GetAppUserID(r *http.Request) (int, error) {
+	claims, err := ParseToken(r)
+	if err != nil {
+		return 0, err
+	}
+	userIDType := claims["user_id"]
+	userID64, ok := userIDType.(float64)
+	if !ok {
+		return 0, errors.New("invalid application user ID")
+	}
+	return int(userID64), nil
+}

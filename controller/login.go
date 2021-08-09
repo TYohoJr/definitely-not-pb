@@ -12,7 +12,7 @@ type LoginResult struct {
 	Response     *string `json:"response"`
 	IsError      bool    `json:"is_error"`
 	ErrorMessage *string `json:"error_message"`
-	AppUserId    *int    `json:"app_user_id"`
+	AccountType  *string `json:"account_type"`
 }
 
 func (s *Server) LoginRouter(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +61,21 @@ func (s *Server) handleLogin(user model.AppUser) LoginResult {
 		result.ErrorMessage = &errStr
 		return result
 	}
-	result.AppUserId = appUser.ID
+	acctInfo, err := s.DB.GetAccountInfoByUserID(*appUser.ID)
+	if err != nil {
+		errStr := err.Error()
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
+	acctType, err := s.DB.GetAccountTypeByID(*acctInfo.AccountTypeID)
+	if err != nil {
+		errStr := err.Error()
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
+	result.AccountType = acctType.Type
 	token, err := auth.CreateToken(*appUser.ID)
 	if err != nil {
 		errStr := err.Error()

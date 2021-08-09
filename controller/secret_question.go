@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"defnotpb/model"
 	"encoding/json"
 	"net/http"
+
+	"defnotpb/model"
 )
 
 func (s *Server) SecretQuestionRouter(w http.ResponseWriter, r *http.Request) {
