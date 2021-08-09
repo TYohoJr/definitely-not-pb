@@ -92,7 +92,7 @@ func (s *Server) PhotoRouter(w http.ResponseWriter, r *http.Request) {
 		}
 		err = s.handleCreateNewPhoto(createPhoto, userID)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("failed to create new photo: %v", err.Error()), 500)
+			http.Error(w, fmt.Sprintf("failed to upload photo: %v", err.Error()), 500)
 			return
 		}
 		w.WriteHeader(204)
@@ -167,7 +167,7 @@ func (s *Server) PhotoDownloadRouter(w http.ResponseWriter, r *http.Request) {
 		}
 		fileContent, fileName, fileType, err := s.handleDownloadPhoto(photoID, userID)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			http.Error(w, fmt.Sprintf("failed to download photo: %v", err.Error()), 500)
 			return
 		}
 		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", *fileName))

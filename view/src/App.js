@@ -199,6 +199,9 @@ class App extends Component {
       msgStr = "Uknown error occured"
       isUnknown = false
     }
+    if (msgStr.includes("reached monthly")) { // error is about reaching a monthly limit, dont need to allow error submit, just display
+      isUnknown = false
+    }
     this.setState({ errorMsg: msgStr, showError: true, isUnknownError: isUnknown })
   }
 
