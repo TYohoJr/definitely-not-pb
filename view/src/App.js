@@ -64,26 +64,34 @@ class App extends Component {
     let isValid = this.verifyToken(decoded)
     if (isValid) {
       localStorage.setItem('token', token);
-      return await fetch("/api/account_type", {
-        method: "GET",
-        headers: {
-          "content-type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        }
-      }).then(async (resp) => {
-        let acctType = ""
-        if (resp.status === 200) {
-          let acctTypeInfo = await resp.json();
-          acctType = acctTypeInfo.type
-        }
-        this.setState({
-          appUserID: decoded.user_id,
-          isLoggedIn: true,
-          showAuthModal: false,
-          acctType: acctType,
-        })
-      });
+      this.getAcctType()
+      this.setState({
+        appUserID: decoded.user_id,
+        isLoggedIn: true,
+        showAuthModal: false,
+      })
+      this.getAcctType()
     }
+  }
+
+  getAcctType = async () => {
+    const token = localStorage.getItem('token');
+    await fetch("/api/account_type", {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      }
+    }).then(async (resp) => {
+      let acctType = ""
+      if (resp.status === 200) {
+        let acctTypeInfo = await resp.json();
+        acctType = acctTypeInfo.type
+      }
+      this.setState({
+        acctType: acctType,
+      })
+    });
   }
 
   setLoggedOut = async () => {
@@ -215,6 +223,9 @@ class App extends Component {
       isUnknown = false
     }
     if (msgStr.includes("reached monthly")) { // error is about reaching a monthly limit, dont need to allow error submit, just display
+      isUnknown = false
+    }
+    if (msgStr.includes("email already")) { // error is about an email already being in use, just display
       isUnknown = false
     }
     this.setState({ errorMsg: msgStr, showError: true, isUnknownError: isUnknown })
@@ -374,6 +385,7 @@ class App extends Component {
                 appUserID={this.state.appUserID}
                 closeAccountModal={this.closeAccountModal}
                 displayError={this.displayError}
+                getAcctType={this.getAcctType}
                 acctType={this.state.acctType}
               />
             </Modal.Body>

@@ -9,6 +9,7 @@ class AccountPage extends Component {
         this.state = {
             current_email: "",
             email: "",
+            created_date: "",
             is_email_confirmed: false,
             account_type: "",
             twofa_code: "",
@@ -104,6 +105,7 @@ class AccountPage extends Component {
                     if (respTxt === "correct") {
                         this.setState({ isConfirmingEmail: false, isLoading: false })
                         this.getAccountInfo()
+                        this.props.getAcctType()
                     } else {
                         this.setState({ twofa_error: respTxt });
                     }
@@ -128,11 +130,14 @@ class AccountPage extends Component {
                 this.props.displayError(errorMsg, true);
             } else {
                 let respJSON = await resp.json();
+                let createdTime = new Date(respJSON.created_timestamp)
+                let createdDate = createdTime.toDateString()
                 this.setState({
                     email: respJSON.email,
                     current_email: respJSON.email,
                     is_email_confirmed: respJSON.is_email_confirmed,
                     account_type: respJSON.account_type,
+                    created_date: createdDate,
                 })
             }
         });
@@ -179,16 +184,23 @@ class AccountPage extends Component {
                     <Form>
                         <Form.Group className="mb-3" controlId="formBasicEmail">
                             <Form.Label className="display-block">Account Type:&ensp;{this.capitalizeFirstLetter(this.props.acctType)}</Form.Label>
-                            <Form.Label>Email&ensp;</Form.Label>
-                            {this.state.is_email_confirmed ? <span class="badge rounded-pill bg-success">Confirmed</span> : <span class="badge rounded-pill bg-danger">Unconmfirmed</span>}
-                            <Form.Control
-                                type="text"
-                                placeholder="Email"
-                                required={true}
-                                maxLength={50}
-                                onChange={(e) => this.handleEmailChange(e)}
-                                value={this.state.email}
-                            />
+                            <Form.Label className="display-block">Date Created:&ensp;{this.state.created_date}</Form.Label>
+                            {this.state.is_email_confirmed ?
+                                <Form.Label className="display-block">Email:&ensp;{this.state.email}</Form.Label>
+                                :
+                                <Fragment>
+                                    <Form.Label>Email&ensp;</Form.Label>
+                                    <span class="badge rounded-pill bg-danger">Unconfirmed</span>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Email"
+                                        required={true}
+                                        maxLength={50}
+                                        onChange={(e) => this.handleEmailChange(e)}
+                                        value={this.state.email}
+                                    />
+                                </Fragment>
+                            }
                             {!this.state.is_email_valid ?
                                 <Form.Text className="text-muted">
                                     <div className="req-not-met">Invalid Email</div>
@@ -277,14 +289,17 @@ class AccountPage extends Component {
                                         Confirm Code
                                     </Button>
                                     :
-                                    <Button
-                                        variant="success"
-                                        type="submit"
-                                        className="float-right"
-                                        onClick={this.updateAccountInfo}
-                                    >
-                                        Update
-                                    </Button>
+                                    !this.state.is_email_confirmed ?
+                                        <Button
+                                            variant="success"
+                                            type="submit"
+                                            className="float-right"
+                                            onClick={this.updateAccountInfo}
+                                        >
+                                            Update Email
+                                        </Button>
+                                        :
+                                        null
                                 }
                                 <Button
                                     variant="secondary"

@@ -2,24 +2,28 @@ package model
 
 import (
 	"fmt"
+	"time"
 )
 
 type Photo struct {
-	ID          *int    `db:"id" json:"id"`
-	AppUserID   *int    `db:"app_user_id" json:"app_user_id"`
-	Name        *string `db:"name" json:"name"`
-	S3Bucket    *string `db:"s3_bucket" json:"s3_bucket"`
-	S3Key       *string `db:"s3_key" json:"s3_key"`
-	Description *string `db:"description" json:"description"`
-	FileTypeID  *int    `db:"file_type_id" json:"file_type_id"`
-	FileType    *string `json:"file_type"`
-	Size        *int64  `db:"size" json:"size"`
+	ID                *int       `db:"id" json:"id"`
+	AppUserID         *int       `db:"app_user_id" json:"app_user_id"`
+	Name              *string    `db:"name" json:"name"`
+	S3Bucket          *string    `db:"s3_bucket" json:"s3_bucket"`
+	S3Key             *string    `db:"s3_key" json:"s3_key"`
+	Description       *string    `db:"description" json:"description"`
+	FileTypeID        *int       `db:"file_type_id" json:"file_type_id"`
+	FileType          *string    `json:"file_type"`
+	Size              *int64     `db:"size" json:"size"`
+	UploadedTimestamp *time.Time `db:"uploaded_timestamp" json:"uploaded_timestamp"`
 }
 
 func (db *DB) CreatePhoto(p *Photo) error {
+	now := time.Now().UTC()
+	p.UploadedTimestamp = &now
 	rows, err := db.NamedQuery(
-		`INSERT INTO photo(name, app_user_id, s3_bucket, s3_key, description, file_type_id, size) 
-		VALUES (:name, :app_user_id, :s3_bucket, :s3_key, :description, :file_type_id, :size)
+		`INSERT INTO photo(name, app_user_id, s3_bucket, s3_key, description, file_type_id, size, uploaded_timestamp) 
+		VALUES (:name, :app_user_id, :s3_bucket, :s3_key, :description, :file_type_id, :size, :uploaded_timestamp)
 		RETURNING id`, p)
 	if err != nil {
 		return fmt.Errorf("failed to insert photo into db: %v", err)

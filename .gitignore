@@ -16,7 +16,7 @@
 vendor/
 
 # Local development
-.env
+.env*
 *.vscode
 
 ## Frontend ##

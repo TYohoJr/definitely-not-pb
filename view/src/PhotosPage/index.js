@@ -117,8 +117,10 @@ class PhotosPage extends Component {
                     for (let i = 0; i < respJSON.length; i++) {
                         let photos = this.state.photos
                         let url = await this.getPhotoURL(respJSON[i]);
+                        let uploadTime = new Date(respJSON[i].uploaded_timestamp)
                         var obj = respJSON[i];
                         obj.photo_url = url
+                        obj.uploaded_timestamp = uploadTime.toDateString()
                         photos.push(obj)
                         this.setState({ photos: photos })
                     }
@@ -615,7 +617,11 @@ class PhotosPage extends Component {
                         >
                             {this.state.isLoading ?
                                 <Fragment>
-                                    <span className="photo-details"><b>FileName:</b> {this.state.selectedPhoto.name}<br /><b>Description:</b> {this.state.selectedPhoto.description}</span>
+                                    <span className="photo-details">
+                                        <b>File Name:</b> {this.state.selectedPhoto.name}<br />
+                                        <b>Description:</b> {this.state.selectedPhoto.description}<br />
+                                        <b>Uploaded Date:</b> {this.state.selectedPhoto.uploaded_timestamp}<br />
+                                    </span>
                                     <Spinner
                                         animation="border"
                                         role="status"
@@ -626,7 +632,11 @@ class PhotosPage extends Component {
                                 </Fragment>
                                 :
                                 <Fragment>
-                                    <span className="photo-details"><b>FileName:</b> {this.state.selectedPhoto.name}<br /><b>Description:</b> {this.state.selectedPhoto.description}</span>
+                                    <span className="photo-details">
+                                        <b>File Name:</b> {this.state.selectedPhoto.name}<br />
+                                        <b>Description:</b> {this.state.selectedPhoto.description}<br />
+                                        <b>Upload Date:</b> {this.state.selectedPhoto.uploaded_timestamp}<br />
+                                    </span>
                                     <span className="photo-btns-container">
                                         <Button
                                             variant="success"

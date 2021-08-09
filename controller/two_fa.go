@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -50,7 +51,7 @@ func (s *Server) handleCreateNewTwoFA(appUserID int) error {
 	m := email.MailServer{
 		DB: s.DB,
 	}
-	err := m.Send2FACode(1)
+	err := m.Send2FACode(appUserID)
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,30 @@ func (s *Server) handleVerifyTwoFA(acctInfo model.AccountInfo) (*string, error) 
 		res := "Incorrect code"
 		return &res, nil
 	}
-	err = s.DB.UpdateAccountInfoConfirmed(*acctInfo.AppUserID)
+	existingInfo, err := s.DB.GetAccountInfoByUserID(*acctInfo.AppUserID)
+	if err != nil {
+		return nil, err
+	}
+	if existingInfo == nil {
+		return nil, errors.New("failed to find account info")
+	}
+	currAcctType, err := s.DB.GetAccountTypeByID(*existingInfo.AccountTypeID)
+	if err != nil {
+		return nil, err
+	}
+	if currAcctType == nil {
+		return nil, errors.New("failed to find current account type")
+	}
+	if *currAcctType.Type == defaultAcctType {
+		baseAcctType, err := s.DB.GetAccountTypeByType(basicAcctType)
+		if err != nil {
+			return nil, err
+		}
+		acctInfo.AccountTypeID = baseAcctType.ID
+	} else {
+		acctInfo.AccountTypeID = currAcctType.ID
+	}
+	err = s.DB.UpdateAccountInfoConfirmed(*acctInfo.AppUserID, *acctInfo.AccountTypeID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to confirm account email: %v", err)
 	}

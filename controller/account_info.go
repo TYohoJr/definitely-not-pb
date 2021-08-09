@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"defnotpb/controller/auth"
 	"defnotpb/model"
@@ -62,6 +63,18 @@ func (s *Server) handleGetAccountInfo(appUserID int) (*model.AccountInfo, error)
 }
 
 func (s *Server) handleUpdateAccountInfo(acctInfo model.AccountInfo) error {
+	if acctInfo.Email == nil {
+		return errors.New("invalid email")
+	}
+	lowerEmail := strings.ToLower(*acctInfo.Email)
+	acctInfo.Email = &lowerEmail
+	existingEmail, err := s.DB.GetAccountInfoByUserEmail(strings.ToLower(*acctInfo.Email))
+	if err != nil {
+		return err
+	}
+	if existingEmail != nil {
+		return errors.New("email already in use")
+	}
 	falseVal := false
 	acctInfo.IsEmailConfirmed = &falseVal
 	acctType, err := s.DB.GetAccountTypeByType(defaultAcctType)

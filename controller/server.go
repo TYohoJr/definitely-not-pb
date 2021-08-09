@@ -16,6 +16,8 @@ const (
 	awsRegion               string = "us-east-1"
 	bucketName              string = "definitely-not-photobucket"
 	defaultAcctType         string = "test"
+	basicAcctType           string = "free"
+	premiumAcctType         string = "premium"
 	defaultAcctTypeUsername string = "testuser"
 )
 
