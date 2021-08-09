@@ -138,7 +138,6 @@ class App extends Component {
   }
 
   getAlbums = async () => {
-    console.log(this.state.acctType)
     const token = localStorage.getItem('token');
     await fetch("/api/album/user/" + encodeURIComponent(this.state.appUserID), {
       method: "GET",
