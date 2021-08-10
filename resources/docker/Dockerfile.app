@@ -8,8 +8,8 @@ WORKDIR $GOPATH/src/app
 
 COPY controller/ ./controller
 COPY model/ ./model
-COPY go.* .
-COPY main.go .
-COPY .env .
+COPY go.* ./
+COPY main.go ./
+COPY .env ./
 
 CMD ["/bin/bash", "-c", "go run main.go"]
