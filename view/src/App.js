@@ -69,8 +69,10 @@ class App extends Component {
         appUserID: decoded.user_id,
         isLoggedIn: true,
         showAuthModal: false,
+      }, () => {
+        this.getAcctType()
+        this.showPage("photos")
       })
-      this.getAcctType()
     }
   }
 
@@ -440,7 +442,15 @@ class App extends Component {
           :
           null
         }
-      </div>
+        <Navbar
+          bg="light"
+          expand="true"
+          fixed="bottom"
+          className="copyright-footer"          
+        >
+          <small className="text-muted">&copy; {process.env.REACT_APP_YEAR || new Date().getFullYear().toString()} Thomas Yoho</small>
+        </Navbar>
+      </div >
     );
   }
 }
