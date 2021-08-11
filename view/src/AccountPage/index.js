@@ -421,7 +421,7 @@ class AccountPage extends Component {
                             <Modal.Footer>
                                 <Button
                                     variant="danger"
-                                    className="float-right"
+                                    className="float-center"
                                     onClick={this.deleteAccount}
                                 >Delete Account</Button>
                             </Modal.Footer>
