@@ -53,6 +53,7 @@ class HomePage extends Component {
                     <li className="mb-2">When you delete a photo or your account it's actually deleted, no secret storing of your data/info</li>
                     <li className="mb-2">Optimized for mobile viewing</li>
                     <li className="mb-2">Completely free at all account types</li>
+                    <li className="mb-2">Now with Dark Mode!</li>
                 </ul>
                 <br />
                 <br />

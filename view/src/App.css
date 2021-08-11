@@ -175,8 +175,13 @@ h4 {
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
   display: inline-block;
+  pointer-events: all;
 }
 
 .pos-rel {
   position: relative;
+}
+
+.no-click {
+  pointer-events: none;
 }

@@ -260,11 +260,11 @@ class AccountPage extends Component {
                                 </svg>
                             </Button>{' '}
                         </span>
-                        <Form.Group className="mb-3 mt-3" controlId="formBasicEmail">
+                        <Form.Group className="mb-3 mt-3 no-click" controlId="formBasicEmail">
                             <Form.Label className="display-block">Account Type:&ensp;{this.capitalizeFirstLetter(this.props.acctType)}</Form.Label>
                             <Form.Label className="display-block">Date Created:&ensp;{this.state.created_date}</Form.Label>
                             <Form.Label className="display-block pos-rel">
-                                <span>Use Dark Mode:&ensp;</span>
+                                <span>Dark Mode:&ensp;</span>
                                 <Form.Check
                                     type="checkbox"
                                     className="dark-mode-checkbox"
