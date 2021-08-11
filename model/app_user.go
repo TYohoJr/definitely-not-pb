@@ -86,3 +86,14 @@ func (db *DB) CreateUser(u *AppUser) error {
 	}
 	return nil
 }
+
+func (db *DB) DeleteAccount(userID int) error {
+	_, err := db.Exec(
+		`DELETE
+		FROM app_user
+		WHERE id=$1`, userID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all account info from db by app_user_id: %v", err)
+	}
+	return nil
+}

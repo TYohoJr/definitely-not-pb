@@ -224,7 +224,7 @@ class AuthPage extends Component {
                 {!this.props.isRegistering ?
                     <div>
                         <Form>
-                            <span className="close-btn-container">
+                            <span className="close-btn-form-container">
                                 <Button // close
                                     type="button"
                                     variant="secondary"
@@ -285,7 +285,7 @@ class AuthPage extends Component {
                     :
                     <div>
                         <Form>
-                            <span className="close-btn-container">
+                            <span className="close-btn-form-container">
                                 <Button // close
                                     type="button"
                                     variant="secondary"

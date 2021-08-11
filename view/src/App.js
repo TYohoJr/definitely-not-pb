@@ -23,6 +23,7 @@ class App extends Component {
       albums: [],
       showError: false,
       errorMsg: "",
+      errorHeader: "An error has occured",
       isUnknownError: true,
       userErrorDescription: "",
       showAuthModal: false,
@@ -36,6 +37,10 @@ class App extends Component {
   }
 
   componentDidMount() {
+    this.setState({
+      showAuthModal: false,
+      showAccountModal: false,
+    })
     const token = localStorage.getItem('token');
     if (token) {
       this.setLoggedIn(token)
@@ -110,6 +115,7 @@ class App extends Component {
       userErrorDescription: "",
       logOutRequired: false,
       isRegistering: false,
+      showAccountModal: false,
     })
   }
 
@@ -213,7 +219,10 @@ class App extends Component {
     });
   }
 
-  displayError = (msg, isUnknown) => {
+  displayError = (msg, isUnknown, errorHeader) => {
+    if (!errorHeader) {
+      errorHeader = "An error has occured"
+    }
     let msgStr = String(msg).trim()
     if (msgStr === "signature is invalid" || msgStr === "invalid token") { // token is no longer valid, force logout
       this.setState({ logOutRequired: true })
@@ -230,7 +239,7 @@ class App extends Component {
     if (msgStr.includes("email already")) { // error is about an email already being in use, just display
       isUnknown = false
     }
-    this.setState({ errorMsg: msgStr, showError: true, isUnknownError: isUnknown })
+    this.setState({ errorMsg: msgStr, errorHeader: errorHeader, showError: true, isUnknownError: isUnknown })
   }
 
   closeError = () => {
@@ -389,6 +398,7 @@ class App extends Component {
                 displayError={this.displayError}
                 getAcctType={this.getAcctType}
                 acctType={this.state.acctType}
+                setLoggedOut={this.setLoggedOut}
               />
             </Modal.Body>
           </Modal>
@@ -405,7 +415,7 @@ class App extends Component {
             className="error-modal"
           >
             <Modal.Header>
-              <Modal.Title>An error has occured</Modal.Title>
+              <Modal.Title>{this.state.errorHeader}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               {this.state.errorMsg}
@@ -431,11 +441,24 @@ class App extends Component {
             <Modal.Footer>
               {this.state.isUnknownError ?
                 <Fragment>
-                  <Button variant="success" type="submit" onClick={this.reportError}>Report Error</Button>
-                  <Button variant="primary" onClick={this.closeError}>Continue Without Reporting</Button>
+                  <Button
+                    variant="success"
+                    type="submit"
+                    className="float-right"
+                    onClick={this.reportError}
+                  >Report Error</Button>
+                  <Button
+                    variant="primary"
+                    className="float-right"
+                    onClick={this.closeError}
+                  >Continue Without Reporting</Button>
                 </Fragment>
                 :
-                <Button variant="primary" onClick={this.closeError}>Ok</Button>
+                <Button
+                  variant="primary"
+                  className="float-right"
+                  onClick={this.closeError}
+                >Ok</Button>
               }
             </Modal.Footer>
           </Modal>
@@ -446,7 +469,7 @@ class App extends Component {
           bg="light"
           expand="true"
           fixed="bottom"
-          className="copyright-footer"          
+          className="copyright-footer"
         >
           <small className="text-muted">&copy; {process.env.REACT_APP_YEAR || new Date().getFullYear().toString()} Thomas Yoho</small>
         </Navbar>

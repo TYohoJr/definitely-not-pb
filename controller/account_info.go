@@ -4,11 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
 	"defnotpb/controller/auth"
 	"defnotpb/model"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 func (s *Server) AccountInfoRouter(w http.ResponseWriter, r *http.Request) {
@@ -43,6 +48,20 @@ func (s *Server) AccountInfoRouter(w http.ResponseWriter, r *http.Request) {
 		err = s.handleUpdateAccountInfo(newAcctInfo)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to update account info: %v", err.Error()), 500)
+			return
+		}
+		w.WriteHeader(204)
+		w.Header().Set("Content-Type", "application/json")
+		return
+	case "DELETE":
+		userID, err := auth.GetAppUserID(r)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		err = s.handledeleteAccount(userID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to delete account: %v", err.Error()), 500)
 			return
 		}
 		w.WriteHeader(204)
@@ -90,4 +109,46 @@ func (s *Server) handleUpdateAccountInfo(acctInfo model.AccountInfo) error {
 		return err
 	}
 	return nil
+}
+
+func (s *Server) handledeleteAccount(userID int) error {
+	user, err := s.DB.GetAppUserByID(userID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return errors.New("failed to find user to delete account")
+	}
+	photos, err := s.DB.GetPhotosByAppUserID(userID)
+	if err != nil {
+		return err
+	}
+	for _, p := range photos {
+		deletePhotoFromS3(*p.S3Bucket, *p.S3Key)
+	}
+	err = s.DB.DeleteAccount(userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deletePhotoFromS3(bucketName string, objKey string) {
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion),
+	})
+	if err != nil {
+		log.Fatal(fmt.Errorf("failed to delete photo from S3 on account deletion: failed to create session: %v", err))
+		return
+	}
+	svc := s3.New(sess)
+	input := &s3.DeleteObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objKey),
+	}
+	_, err = svc.DeleteObject(input)
+	if err != nil {
+		log.Fatal(fmt.Errorf("failed to delete photo from S3 on account deletion: failed to delete object: %v", err))
+		return
+	}
 }

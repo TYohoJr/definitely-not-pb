@@ -204,6 +204,21 @@ class AlbumsPage extends Component {
                         centered
                         backdrop="static"
                     >
+                        <Modal.Header
+                            className="display-block"
+                        >
+                            <Modal.Title className="float-left">Create Album</Modal.Title>
+                            <Button // close
+                                type="button"
+                                variant="secondary"
+                                className="float-right"
+                                onClick={() => this.setState({ newAlbumName: "", isCreatingNewAlbum: false })}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
+                                </svg>
+                            </Button>
+                        </Modal.Header>
                         <Modal.Body>
                             <Form.Group className="mb-3" controlId="formBasicEmail">
                                 <Form.Label>Album Name</Form.Label>
@@ -239,17 +254,9 @@ class AlbumsPage extends Component {
                                 :
                                 <Fragment>
                                     <Button
-                                        variant="secondary"
-                                        type="button"
-                                        className="float-left"
-                                        onClick={() => this.setState({ newAlbumName: "", isCreatingNewAlbum: false })}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
                                         variant="success"
                                         type="button"
-                                        className="float-right"
+                                        className="float-center"
                                         onClick={this.createAlbum}
                                     >
                                         Create

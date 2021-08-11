@@ -68,6 +68,12 @@ func (s *Server) handleLogin(user model.AppUser) LoginResult {
 		result.ErrorMessage = &errStr
 		return result
 	}
+	if acctInfo == nil {
+		errStr := "Incorrect username/password"
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
 	acctType, err := s.DB.GetAccountTypeByID(*acctInfo.AccountTypeID)
 	if err != nil {
 		errStr := err.Error()

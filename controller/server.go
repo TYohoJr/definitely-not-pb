@@ -103,6 +103,7 @@ func (s *Server) initializeRoutes() {
 		r.Put("/", m.AuthorizationMiddleware(s.AccountInfoRouter))
 		r.Route("/user/{userID}", func(r chi.Router) {
 			r.Get("/", m.AuthorizationMiddleware(s.AccountInfoRouter))
+			r.Delete("/", m.AuthorizationMiddleware(s.AccountInfoRouter))
 		})
 	})
 	s.Router.Route("/api/two_fa", func(r chi.Router) {

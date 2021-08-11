@@ -422,6 +422,21 @@ class PhotosPage extends Component {
                         centered
                         backdrop="static"
                     >
+                        <Modal.Header
+                            className="display-block"
+                        >
+                            <Modal.Title className="float-left">Upload Photo</Modal.Title>
+                            <Button // close
+                                type="button"
+                                variant="secondary"
+                                className="float-right"
+                                onClick={this.closeUploadModal}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
+                                </svg>
+                            </Button>
+                        </Modal.Header>
                         <Modal.Body>
                             <Form.Group controlId="formFile" className="mb-3">
                                 <Form.Label
@@ -453,17 +468,10 @@ class PhotosPage extends Component {
                                 <Fragment>
                                     <Button
                                         variant="success"
-                                        className="float-right"
+                                        className="float-center"
                                         onClick={() => this.uploadPhoto(this.state.selectedFile)}
                                     >
                                         Upload
-                                    </Button>
-                                    <Button
-                                        variant="danger"
-                                        className="float-left"
-                                        onClick={this.closeUploadModal}
-                                    >
-                                        Cancel
                                     </Button>
                                 </Fragment>
                             }
@@ -480,10 +488,23 @@ class PhotosPage extends Component {
                         centered
                         backdrop="static"
                     >
+                        <Modal.Header
+                            className="display-block"
+                        >
+                            <Modal.Title className="float-left mr-3">Add To Album</Modal.Title>
+                            <Button // close
+                                type="button"
+                                variant="secondary"
+                                className="float-right"
+                                onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseAddAlbum: false })}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
+                                </svg>
+                            </Button>
+                        </Modal.Header>
                         <Modal.Body>
                             <Form.Group controlId="formFile" className="mb-3">
-                                <Form.Label className="upload-form-label">Photo Name</Form.Label>
-                                <Form.Text>{this.state.photoToAddToAlbum ? this.state.photoToAddToAlbum.name : null}</Form.Text>
                                 <Form.Label className="upload-form-label">Choose Album</Form.Label>
                                 <Form.Control
                                     onChange={this.handleChooseAlbumChange}
@@ -503,17 +524,10 @@ class PhotosPage extends Component {
                         <Modal.Footer>
                             <Button
                                 variant="success"
-                                className="float-right"
+                                className="float-center"
                                 onClick={() => this.addPhotoToAlbum()}
                             >
                                 Add
-                            </Button>
-                            <Button
-                                variant="primary"
-                                className="float-left"
-                                onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseAddAlbum: false })}
-                            >
-                                Close
                             </Button>
                         </Modal.Footer>
                     </Modal>
@@ -528,10 +542,23 @@ class PhotosPage extends Component {
                         centered
                         backdrop="static"
                     >
+                        <Modal.Header
+                            className="display-block"
+                        >
+                            <Modal.Title className="float-left mr-3">Remove From Album</Modal.Title>
+                            <Button // close
+                                type="button"
+                                variant="secondary"
+                                className="float-right"
+                                onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseRemoveAlbum: false })}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
+                                </svg>
+                            </Button>
+                        </Modal.Header>
                         <Modal.Body>
                             <Form.Group controlId="formFile" className="mb-3">
-                                <Form.Label className="upload-form-label">Photo Name</Form.Label>
-                                <Form.Text>{this.state.photoToAddToAlbum ? this.state.photoToAddToAlbum.name : null}</Form.Text>
                                 <Form.Label className="upload-form-label">Choose Album</Form.Label>
                                 <Form.Control
                                     onChange={this.handleChooseAlbumChange}
@@ -550,17 +577,10 @@ class PhotosPage extends Component {
                         <Modal.Footer>
                             <Button
                                 variant="danger"
-                                className="float-right"
+                                className="float-center"
                                 onClick={() => this.removePhotoToAlbum()}
                             >
                                 Remove
-                            </Button>
-                            <Button
-                                variant="primary"
-                                className="float-left"
-                                onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseRemoveAlbum: false })}
-                            >
-                                Close
                             </Button>
                         </Modal.Footer>
                     </Modal>
