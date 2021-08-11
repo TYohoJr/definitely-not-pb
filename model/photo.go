@@ -40,7 +40,8 @@ func (db *DB) GetPhotosByAppUserID(appUserID int) ([]Photo, error) {
 	err := db.Select(&photos,
 		`SELECT *
 		FROM photo
-		WHERE app_user_id=$1`, appUserID)
+		WHERE app_user_id=$1
+		ORDER BY uploaded_timestamp ASC`, appUserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get photos by app_user_id from db: %v", err)
 	}

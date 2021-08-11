@@ -2,6 +2,7 @@ import { Component, Fragment } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Spinner from 'react-bootstrap/Spinner';
+import Modal from 'react-bootstrap/Modal';
 
 class AccountPage extends Component {
     constructor(props) {
@@ -17,6 +18,7 @@ class AccountPage extends Component {
             is_email_valid: true,
             isLoading: false,
             isConfirmingEmail: false,
+            showDeleteAccount: false
         }
     }
 
@@ -186,8 +188,10 @@ class AccountPage extends Component {
                 let errorMsg = await resp.text();
                 this.props.displayError(errorMsg, true);
             } else {
-                this.props.setLoggedOut()
-                this.props.displayError("Your account, including all photos and albums, has been deleted and you will now be logged out", false, "So long!");
+                this.setState({ showDeleteAccount: false }, () => {
+                    this.props.setLoggedOut()
+                    this.props.displayError("Your account, including all photos and albums, has been deleted and you will now be logged out", false, "So long!");
+                })
             }
         });
     }
@@ -206,7 +210,7 @@ class AccountPage extends Component {
                                 variant="danger"
                                 type="button"
                                 className="float-left"
-                                onClick={this.deleteAccount}
+                                onClick={() => this.setState({ showDeleteAccount: true })}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
@@ -347,6 +351,42 @@ class AccountPage extends Component {
                         }
                     </Form>
                 </div>
+                {this.state.showDeleteAccount ?
+                    <Modal
+                        show={true}
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        centered
+                        backdrop="static"
+                        className="error-modal"
+                    >
+                        <Modal.Header
+                            className="display-block"
+                        >
+                            <Modal.Title className="float-left">Confirm Delete Account</Modal.Title>
+                            <Button // close
+                                type="button"
+                                variant="secondary"
+                                className="float-right"
+                                onClick={() => this.setState({ showDeleteAccount: false })}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
+                                </svg>
+                            </Button>
+                        </Modal.Header>
+                        <Modal.Body>Deleting your account will completely remove all your info, albums, and photos. This cannot be undone. Are you sure?</Modal.Body>
+                        <Modal.Footer>
+                            <Button
+                                variant="danger"
+                                className="float-right"
+                                onClick={this.deleteAccount}
+                            >Delete Account</Button>
+                        </Modal.Footer>
+                    </Modal>
+                    :
+                    null
+                }
             </div>
         )
     }

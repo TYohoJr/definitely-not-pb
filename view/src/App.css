@@ -31,6 +31,8 @@ h4 {
   min-width: auto;
   width: fit-content;
   margin: 0 auto;
+  max-height: 75vh;
+  overflow-y: scroll;
 }
 
 .modal-footer {
@@ -74,6 +76,7 @@ h4 {
 
 .modal-body {
   width: fit-content;
+  max-width: 100vw;
   margin: 0 auto;
 }
 
@@ -120,6 +123,10 @@ h4 {
   display: block;
 }
 
+.display-flex {
+  display: flex;
+}
+
 .no-bullets {
   list-style-type: none;
   padding-left: unset;
@@ -130,4 +137,29 @@ h4 {
   margin: 0 auto;
   opacity: 0.7;
   background: none!important;
+  pointer-events: none;
+}
+
+.album-list {
+  list-style-type: none;
+  padding-left: unset;
+  text-align: center;
+}
+
+.album-li {
+  height: 50px;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.album-li-name {
+  margin-top: 8px;
+  margin-right: 10px;
+  display: inline-block;
+  max-width: 50vw;
+  overflow-y: scroll;
+}
+
+.album-li-btn {
+  margin: 2px!important;
 }

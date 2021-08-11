@@ -16,15 +16,9 @@ class PhotosPage extends Component {
             selectedFile: null,
             selectedFileDescription: "",
             selectedPhotoURL: "",
-            photoToAddToAlbum: null,
-            photoToRemoveFromAlbum: null,
-            selectedAlbum: null,
             selectedPhotoAlbumIDs: [],
-            showChooseAddAlbum: false,
-            showChooseRemoveAlbum: false,
             isLoading: false,
             selectedPhoto: null,
-            alreadyAddedAlbums: [],
         }
     }
 
@@ -33,7 +27,7 @@ class PhotosPage extends Component {
         this.props.getAlbums()
     }
 
-    handleShowAddChooseAlbum = async (photo) => {
+    getSelectedPhotoAlbums = async (photo) => {
         const token = localStorage.getItem('token');
         await fetch("/api/album/photo/" + encodeURIComponent(photo.id), {
             method: "GET",
@@ -51,38 +45,7 @@ class PhotosPage extends Component {
                 respJSON.forEach((album, i) => {
                     albumIDs.push(album.id)
                 });
-                this.setState({ selectedPhotoAlbumIDs: albumIDs }, () => {
-                    this.setState({ photoToAddToAlbum: photo }, () => {
-                        this.setState({ showChooseAddAlbum: true })
-                    })
-                });
-            }
-        });
-    }
-
-    handleShowRemoveChooseAlbum = async (photo) => {
-        const token = localStorage.getItem('token');
-        await fetch("/api/album/photo/" + encodeURIComponent(photo.id), {
-            method: "GET",
-            headers: {
-                "content-type": "application/json",
-                "Authorization": `Bearer ${token}`,
-            }
-        }).then(async (resp) => {
-            if (resp.status !== 200) {
-                let errorMsg = await resp.text();
-                this.props.displayError(errorMsg, true);
-            } else {
-                let respJSON = await resp.json();
-                let albumIDs = []
-                respJSON.forEach((album, i) => {
-                    albumIDs.push(album.id)
-                });
-                this.setState({ selectedPhotoAlbumIDs: albumIDs }, () => {
-                    this.setState({ photoToRemoveFromAlbum: photo }, () => {
-                        this.setState({ showChooseRemoveAlbum: true })
-                    })
-                });
+                this.setState({ selectedPhotoAlbumIDs: albumIDs });
             }
         });
     }
@@ -93,10 +56,6 @@ class PhotosPage extends Component {
 
     closeUploadModal = () => {
         this.setState({ showUpload: false, selectedFile: null, selectedFileDescription: "" })
-    }
-
-    handleChooseAlbumChange = (e) => {
-        this.setState({ selectedAlbum: this.props.albums[e.target.value] })
     }
 
     getPhotos = async () => {
@@ -212,6 +171,7 @@ class PhotosPage extends Component {
 
     viewPhoto = async (photo) => {
         this.setState({ isLoading: true, selectedPhoto: photo }, async () => {
+            await this.getSelectedPhotoAlbums(this.state.selectedPhoto)
             const token = localStorage.getItem('token');
             await fetch("/api/photo/id/" + encodeURIComponent(photo.id), {
                 method: "GET",
@@ -252,14 +212,14 @@ class PhotosPage extends Component {
         });
     }
 
-    addPhotoToAlbum = async () => {
-        if (!this.state.photoToAddToAlbum || !this.state.selectedAlbum) {
+    addPhotoToAlbum = async (album) => {
+        if (!this.state.selectedPhoto || !album) {
             return
         }
         const token = localStorage.getItem('token');
         let albumPhotoData = {
-            album_id: this.state.selectedAlbum.id,
-            photo_id: this.state.photoToAddToAlbum.id
+            album_id: album.id,
+            photo_id: this.state.selectedPhoto.id
         }
         await fetch("/api/album_photo/", {
             method: "POST",
@@ -273,21 +233,19 @@ class PhotosPage extends Component {
                 let errorMsg = await resp.text();
                 this.props.displayError(errorMsg, true);
             } else {
-                this.setState({ showChooseAddAlbum: false }, () => {
-                    this.props.getAlbums()
-                })
+                await this.getSelectedPhotoAlbums(this.state.selectedPhoto)
             }
         });
     }
 
-    removePhotoToAlbum = async () => {
-        if (!this.state.photoToRemoveFromAlbum || !this.state.selectedAlbum || !this.state.selectedAlbum || !this.state.photoToRemoveFromAlbum) {
+    removePhotoFromAlbum = async (album) => {
+        if (!this.state.selectedPhoto || !album) {
             return
         }
         const token = localStorage.getItem('token');
         let albumPhotoData = {
-            album_id: this.state.selectedAlbum.id,
-            photo_id: this.state.photoToRemoveFromAlbum.id
+            album_id: album.id,
+            photo_id: this.state.selectedPhoto.id
         }
         await fetch("/api/album_photo/", {
             method: "DELETE",
@@ -301,9 +259,7 @@ class PhotosPage extends Component {
                 let errorMsg = await resp.text();
                 this.props.displayError(errorMsg, true);
             } else {
-                this.setState({ showChooseRemoveAlbum: false, selectedAlbum: null }, () => {
-                    this.props.getAlbums()
-                })
+                await this.getSelectedPhotoAlbums(this.state.selectedPhoto)
             }
         });
     }
@@ -480,113 +436,6 @@ class PhotosPage extends Component {
                     :
                     null
                 }
-                {this.state.showChooseAddAlbum ?
-                    <Modal
-                        show={true}
-                        size="lg"
-                        aria-labelledby="contained-modal-title-vcenter"
-                        centered
-                        backdrop="static"
-                    >
-                        <Modal.Header
-                            className="display-block"
-                        >
-                            <Modal.Title className="float-left mr-3">Add To Album</Modal.Title>
-                            <Button // close
-                                type="button"
-                                variant="secondary"
-                                className="float-right"
-                                onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseAddAlbum: false })}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                                    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
-                                </svg>
-                            </Button>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <Form.Group controlId="formFile" className="mb-3">
-                                <Form.Label className="upload-form-label">Choose Album</Form.Label>
-                                <Form.Control
-                                    onChange={this.handleChooseAlbumChange}
-                                    as="select"
-                                >
-                                    <option disabled selected value="">Select Album</option>
-                                    {this.props.albums.map((album, i) => {
-                                        if (this.state.selectedPhotoAlbumIDs.indexOf(album.id) !== -1) {
-                                            return <option value={i} disabled>{album.name} - Already added</option>
-                                        } else {
-                                            return <option value={i}>{album.name}</option>
-                                        }
-                                    })}
-                                </Form.Control>
-                            </Form.Group>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button
-                                variant="success"
-                                className="float-center"
-                                onClick={() => this.addPhotoToAlbum()}
-                            >
-                                Add
-                            </Button>
-                        </Modal.Footer>
-                    </Modal>
-                    :
-                    null
-                }
-                {this.state.showChooseRemoveAlbum ?
-                    <Modal
-                        show={true}
-                        size="lg"
-                        aria-labelledby="contained-modal-title-vcenter"
-                        centered
-                        backdrop="static"
-                    >
-                        <Modal.Header
-                            className="display-block"
-                        >
-                            <Modal.Title className="float-left mr-3">Remove From Album</Modal.Title>
-                            <Button // close
-                                type="button"
-                                variant="secondary"
-                                className="float-right"
-                                onClick={() => this.setState({ selectedAlbum: null, photoToAddToAlbum: null, showChooseRemoveAlbum: false })}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                                    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
-                                </svg>
-                            </Button>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <Form.Group controlId="formFile" className="mb-3">
-                                <Form.Label className="upload-form-label">Choose Album</Form.Label>
-                                <Form.Control
-                                    onChange={this.handleChooseAlbumChange}
-                                    as="select"
-                                >
-                                    <option disabled selected value="">Select Album</option>
-                                    {this.props.albums.map((album, i) => {
-                                        if (this.state.selectedPhotoAlbumIDs.indexOf(album.id) !== -1) {
-                                            return <option value={i}>{album.name}</option>
-                                        }
-                                        return null
-                                    })}
-                                </Form.Control>
-                            </Form.Group>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button
-                                variant="danger"
-                                className="float-center"
-                                onClick={() => this.removePhotoToAlbum()}
-                            >
-                                Remove
-                            </Button>
-                        </Modal.Footer>
-                    </Modal>
-                    :
-                    null
-                }
                 {this.state.showPicture ?
                     <Modal
                         show={true}
@@ -656,22 +505,85 @@ class PhotosPage extends Component {
                                         <b>File Name:</b> {this.state.selectedPhoto.name}<br />
                                         <b>Description:</b> {this.state.selectedPhoto.description}<br />
                                         <b>Upload Date:</b> {this.state.selectedPhoto.uploaded_timestamp}<br />
+                                        <b>Albums:</b><br />
                                     </span>
                                     <span className="photo-btns-container">
-                                        <Button
-                                            variant="success"
-                                            type="button"
-                                            onClick={() => this.handleShowAddChooseAlbum(this.state.selectedPhoto)}
-                                        >
-                                            Add To Album
-                                        </Button>{' '}
-                                        <Button
-                                            variant="danger"
-                                            type="button"
-                                            onClick={() => this.handleShowRemoveChooseAlbum(this.state.selectedPhoto)}
-                                        >
-                                            Remove From Album
-                                        </Button>{' '}
+                                        <ul className="album-list">
+                                            {this.props.albums.sort((a, b) => {
+                                                if (this.state.selectedPhotoAlbumIDs.indexOf(a.id) !== -1 && this.state.selectedPhotoAlbumIDs.indexOf(b.id) === -1) { // already added and next one isnt
+                                                    return -1
+                                                } else if (this.state.selectedPhotoAlbumIDs.indexOf(a.id) === -1 && this.state.selectedPhotoAlbumIDs.indexOf(b.id) !== -1) { // not added and next one is
+                                                    return 1
+                                                } else { // neither are already added or both are already added
+                                                    if (a.name < b.name) {
+                                                        return -1
+                                                    } else if (a.name > b.name) {
+                                                        return 1
+                                                    }
+                                                    return 0
+                                                }
+                                            }).map((album, i) => {
+                                                if (this.state.selectedPhotoAlbumIDs.indexOf(album.id) !== -1) {
+                                                    return <li
+                                                        className="album-li"
+                                                        key={i}
+                                                    >
+                                                        <span className="album-li-name">
+                                                            {album.name}
+                                                        </span>
+                                                        <Button // Add disabled
+                                                            type="button"
+                                                            variant="secondary"
+                                                            className="float-right album-li-btn"
+                                                            disabled={true}
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                                                                <path d="M8 0a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2H9v6a1 1 0 1 1-2 0V9H1a1 1 0 0 1 0-2h6V1a1 1 0 0 1 1-1z" />
+                                                            </svg>
+                                                        </Button>
+                                                        <Button // Subtract
+                                                            type="button"
+                                                            variant="danger"
+                                                            className="float-right album-li-btn"
+                                                            onClick={() => this.removePhotoFromAlbum(album)}
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+                                                                <path d="M0 8a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H1a1 1 0 0 1-1-1z" />
+                                                            </svg>
+                                                        </Button>
+                                                    </li>
+                                                } else {
+                                                    return <li
+                                                        className="album-li"
+                                                        key={i}
+                                                    >
+                                                        <span className="album-li-name">
+                                                            {album.name}
+                                                        </span>
+                                                        <Button // Add
+                                                            type="button"
+                                                            variant="success"
+                                                            className="float-right album-li-btn"
+                                                            onClick={() => this.addPhotoToAlbum(album)}
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                                                                <path d="M8 0a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2H9v6a1 1 0 1 1-2 0V9H1a1 1 0 0 1 0-2h6V1a1 1 0 0 1 1-1z" />
+                                                            </svg>
+                                                        </Button>
+                                                        <Button // Subtract disabled
+                                                            type="button"
+                                                            variant="secondary"
+                                                            className="float-right album-li-btn"
+                                                            disabled={true}
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+                                                                <path d="M0 8a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H1a1 1 0 0 1-1-1z" />
+                                                            </svg>
+                                                        </Button>
+                                                    </li>
+                                                }
+                                            })}
+                                        </ul>
                                     </span>
                                 </Fragment>
                             }
