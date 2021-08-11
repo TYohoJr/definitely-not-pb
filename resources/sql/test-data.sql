@@ -23,7 +23,7 @@ INSERT INTO app_user(username,secret_question_id,secret_question_answer,password
 INSERT INTO app_user(username,secret_question_id,secret_question_answer,password_hash) SELECT 'tyohojr',sq.id,'Bilinski','$2a$10$GSVqlh1ZNJ2PnOtWtYWYMOxrh4WnKq.m6pSbwNm6hWNjI3GXLsfr.' FROM secret_question sq WHERE sq.question='What is your mothers maiden name?';
 
 INSERT INTO account_info(app_user_id, account_type_id, email, is_email_confirmed, created_timestamp) SELECT au.id,aty.id,'definitely.not.pb@gmail.com',TRUE,'2021-08-04T21:58:04.497Z' FROM app_user au, account_type aty WHERE au.username='testuser' AND aty.type='premium';
-INSERT INTO account_info(app_user_id, account_type_id, email, is_email_confirmed, created_timestamp) SELECT au.id,aty.id,'tyohojr@gmail.com',TRUE,'2021-08-04T21:58:04.497Z' FROM app_user au, account_type aty WHERE au.username='tyohojr' AND aty.type='premium';
+INSERT INTO account_info(app_user_id, account_type_id, email, is_email_confirmed, created_timestamp, use_dark_mode) SELECT au.id,aty.id,'tyohojr@gmail.com',TRUE,'2021-08-04T21:58:04.497Z',TRUE FROM app_user au, account_type aty WHERE au.username='tyohojr' AND aty.type='premium';
 
 INSERT INTO album(name,app_user_id) SELECT 'testing album',au.id FROM app_user au WHERE au.username='testuser';
 

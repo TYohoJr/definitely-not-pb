@@ -10,6 +10,7 @@ type AccountInfo struct {
 	AppUserID           *int       `db:"app_user_id" json:"app_user_id"`
 	Email               *string    `db:"email" json:"email"`
 	IsEmailConfirmed    *bool      `db:"is_email_confirmed" json:"is_email_confirmed"`
+	UseDarkMode         *bool      `db:"use_dark_mode" json:"use_dark_mode"`
 	AccountTypeID       *int       `db:"account_type_id" json:"account_type_id"`
 	TwoFACode           *string    `db:"twofa_code" json:"twofa_code"`
 	TwoFACodeExpiration *time.Time `db:"twofa_code_expiration" json:"twofa_code_expiration"`
@@ -93,6 +94,17 @@ func (db *DB) UpdateAccountInfoConfirmed(userID int, acctType int) error {
 		`UPDATE account_info
 		SET is_email_confirmed=$2, account_type_id=$3
 		WHERE app_user_id=$1`, userID, trueVal, acctType)
+	if err != nil {
+		return fmt.Errorf("failed to update account_info in db: %v", err)
+	}
+	return nil
+}
+
+func (db *DB) UpdateAccountInfoDarkMode(userID int, useDM bool) error {
+	_, err := db.Exec(
+		`UPDATE account_info
+		SET use_dark_mode=$2
+		WHERE app_user_id=$1`, userID, useDM)
 	if err != nil {
 		return fmt.Errorf("failed to update account_info in db: %v", err)
 	}

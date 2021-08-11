@@ -31,8 +31,8 @@ h4 {
   min-width: auto;
   width: fit-content;
   margin: 0 auto;
-  max-height: 75vh;
-  overflow-y: scroll;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-footer {
@@ -101,6 +101,7 @@ h4 {
   left: 50%;
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
+  background-color: var(--modal-background-color, #f7f7f7)!important;
 }
 
 .float-center {
@@ -157,9 +158,25 @@ h4 {
   margin-right: 10px;
   display: inline-block;
   max-width: 50vw;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .album-li-btn {
   margin: 2px!important;
+}
+
+.dark-mode-checkbox {
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  display: inline-block;
+}
+
+.pos-rel {
+  position: relative;
 }

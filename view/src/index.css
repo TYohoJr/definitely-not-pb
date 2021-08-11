@@ -1,4 +1,6 @@
 body {
+  background-color: var(--body-background-color, #f7f7f7)!important;
+  color: var(--body-color, #212529)!important;
   margin: 0;
   height: 100vh;
   background-color: #f7f7f7;

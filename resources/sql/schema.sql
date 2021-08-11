@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS account_info(
     app_user_id           INTEGER NOT NULL,
     email                 VARCHAR(50) UNIQUE,
     is_email_confirmed    BOOLEAN NOT NULL DEFAULT FALSE,
+    use_dark_mode         BOOLEAN NOT NULL DEFAULT FALSE,
     account_type_id       INTEGER NOT NULL,
     twofa_code            TEXT,
     twofa_code_expiration TIMESTAMP,

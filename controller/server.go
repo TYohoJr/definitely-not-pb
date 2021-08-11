@@ -105,6 +105,9 @@ func (s *Server) initializeRoutes() {
 			r.Get("/", m.AuthorizationMiddleware(s.AccountInfoRouter))
 			r.Delete("/", m.AuthorizationMiddleware(s.AccountInfoRouter))
 		})
+		r.Route("/dark_mode", func(r chi.Router) {
+			r.Put("/", m.AuthorizationMiddleware(s.AccountUseDarkModeRouter))
+		})
 	})
 	s.Router.Route("/api/two_fa", func(r chi.Router) {
 		r.Put("/", m.AuthorizationMiddleware(s.TwoFARouter))

@@ -44,7 +44,7 @@ class HomePage extends Component {
         return (
             <div>
                 <h3 className="title-header">Welcome to Definitely Not PB</h3>
-                <p><small>*For legal reasons let's say it stand for Peanut Butter :)</small></p>
+                <p><small>*For legal reasons let's say it stands for Peanut Butter :)</small></p>
                 <br />
                 <h5>Features:</h5>
                 <ul className="no-bullets">

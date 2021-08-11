@@ -224,7 +224,7 @@ class AlbumsPage extends Component {
                                 <Form.Label>Album Name</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Username"
+                                    placeholder="Album Name"
                                     maxLength={50}
                                     required={true}
                                     onChange={(e) => this.handleNewAlbumNameChange(e)}

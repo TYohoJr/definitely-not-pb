@@ -18,7 +18,8 @@ class AccountPage extends Component {
             is_email_valid: true,
             isLoading: false,
             isConfirmingEmail: false,
-            showDeleteAccount: false
+            showDeleteAccount: false,
+            use_dark_mode: false,
         }
     }
 
@@ -140,6 +141,9 @@ class AccountPage extends Component {
                     is_email_confirmed: respJSON.is_email_confirmed,
                     account_type: respJSON.account_type,
                     created_date: createdDate,
+                    use_dark_mode: respJSON.use_dark_mode
+                }, () => {
+                    this.props.updateDarkMode(this.state.use_dark_mode)
                 })
             }
         });
@@ -168,6 +172,34 @@ class AccountPage extends Component {
                     this.props.displayError(errorMsg, true);
                 } else {
                     this.getAccountInfo()
+                }
+            }).finally(() => {
+                this.setState({ isLoading: false });
+            });
+        })
+    }
+
+    updateDarkMode = async (e) => {
+        this.setState({ isLoading: true }, async () => {
+            let accountInfo = {
+                app_user_id: this.props.appUserID,
+                use_dark_mode: !e.target.checked,
+            }
+            const token = localStorage.getItem('token');
+            await fetch("/api/account_info/dark_mode", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(accountInfo)
+            }).then(async (resp) => {
+                if (resp.status !== 204) {
+                    let errorMsg = await resp.text();
+                    this.props.displayError(errorMsg, true);
+                } else {
+                    this.getAccountInfo()
+                    this.props.updateDarkMode(!e.target.checked)
                 }
             }).finally(() => {
                 this.setState({ isLoading: false });
@@ -231,6 +263,15 @@ class AccountPage extends Component {
                         <Form.Group className="mb-3 mt-3" controlId="formBasicEmail">
                             <Form.Label className="display-block">Account Type:&ensp;{this.capitalizeFirstLetter(this.props.acctType)}</Form.Label>
                             <Form.Label className="display-block">Date Created:&ensp;{this.state.created_date}</Form.Label>
+                            <Form.Label className="display-block pos-rel">
+                                <span>Use Dark Mode:&ensp;</span>
+                                <Form.Check
+                                    type="checkbox"
+                                    className="dark-mode-checkbox"
+                                    checked={this.state.use_dark_mode}
+                                    onChange={(e) => this.updateDarkMode(e)}
+                                />
+                            </Form.Label>
                             {this.state.is_email_confirmed ?
                                 <Form.Label className="display-block">Email:&ensp;{this.state.email}</Form.Label>
                                 :
@@ -351,43 +392,44 @@ class AccountPage extends Component {
                         }
                     </Form>
                 </div>
-                {this.state.showDeleteAccount ?
-                    <Modal
-                        show={true}
-                        size="lg"
-                        aria-labelledby="contained-modal-title-vcenter"
-                        centered
-                        backdrop="static"
-                        className="error-modal"
-                    >
-                        <Modal.Header
-                            className="display-block"
+                {
+                    this.state.showDeleteAccount ?
+                        <Modal
+                            show={true}
+                            size="lg"
+                            aria-labelledby="contained-modal-title-vcenter"
+                            centered
+                            backdrop="static"
+                            className="error-modal"
                         >
-                            <Modal.Title className="float-left">Confirm Delete Account</Modal.Title>
-                            <Button // close
-                                type="button"
-                                variant="secondary"
-                                className="float-right"
-                                onClick={() => this.setState({ showDeleteAccount: false })}
+                            <Modal.Header
+                                className="display-block"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                                    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
-                                </svg>
-                            </Button>
-                        </Modal.Header>
-                        <Modal.Body>Deleting your account will completely remove all your info, albums, and photos. This cannot be undone. Are you sure?</Modal.Body>
-                        <Modal.Footer>
-                            <Button
-                                variant="danger"
-                                className="float-right"
-                                onClick={this.deleteAccount}
-                            >Delete Account</Button>
-                        </Modal.Footer>
-                    </Modal>
-                    :
-                    null
+                                <Modal.Title className="float-left">Confirm Delete Account</Modal.Title>
+                                <Button // close
+                                    type="button"
+                                    variant="secondary"
+                                    className="float-right"
+                                    onClick={() => this.setState({ showDeleteAccount: false })}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414z" />
+                                    </svg>
+                                </Button>
+                            </Modal.Header>
+                            <Modal.Body>Deleting your account will completely remove all your info, albums, and photos. This cannot be undone. Are you sure?</Modal.Body>
+                            <Modal.Footer>
+                                <Button
+                                    variant="danger"
+                                    className="float-right"
+                                    onClick={this.deleteAccount}
+                                >Delete Account</Button>
+                            </Modal.Footer>
+                        </Modal>
+                        :
+                        null
                 }
-            </div>
+            </div >
         )
     }
 }

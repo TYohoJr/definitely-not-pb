@@ -70,6 +70,31 @@ func (s *Server) AccountInfoRouter(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Server) AccountUseDarkModeRouter(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "PUT":
+		userID, err := auth.GetAppUserID(r)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		newAcctInfo := model.AccountInfo{}
+		err = json.NewDecoder(r.Body).Decode(&newAcctInfo)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to decode newAcctInfo body: %v", err.Error()), 500)
+			return
+		}
+		err = s.handleUpdateUseDarkMode(userID, newAcctInfo)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to update account info: %v", err.Error()), 500)
+			return
+		}
+		w.WriteHeader(204)
+		w.Header().Set("Content-Type", "application/json")
+		return
+	}
+}
+
 func (s *Server) handleGetAccountInfo(appUserID int) (*model.AccountInfo, error) {
 	ai, err := s.DB.GetAccountInfoByUserID(appUserID)
 	if err != nil {
@@ -105,6 +130,17 @@ func (s *Server) handleUpdateAccountInfo(acctInfo model.AccountInfo) error {
 	}
 	acctInfo.AccountTypeID = acctType.ID
 	err = s.DB.UpdateAccountInfo(acctInfo)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) handleUpdateUseDarkMode(userID int, acctInfo model.AccountInfo) error {
+	if acctInfo.UseDarkMode == nil {
+		return errors.New("failed to get dark mode use bool")
+	}
+	err := s.DB.UpdateAccountInfoDarkMode(userID, *acctInfo.UseDarkMode)
 	if err != nil {
 		return err
 	}

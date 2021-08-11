@@ -17,7 +17,8 @@ var (
 
 type Claims struct {
 	jwt.StandardClaims
-	AppUserID int `json:"user_id"`
+	AppUserID   int  `json:"user_id"`
+	UseDarkMode bool `json:"use_dark_mode"`
 }
 
 func InitializeAuth() error {
@@ -29,7 +30,7 @@ func InitializeAuth() error {
 	return nil
 }
 
-func CreateToken(userID int) (string, error) {
+func CreateToken(userID int, useDarkMode bool) (string, error) {
 	claims := Claims{
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 24).UTC().Unix(),
@@ -37,6 +38,7 @@ func CreateToken(userID int) (string, error) {
 			IssuedAt:  time.Now().UTC().Unix(),
 		},
 		userID,
+		useDarkMode,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(tokenSignatureKey))

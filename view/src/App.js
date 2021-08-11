@@ -33,6 +33,7 @@ class App extends Component {
       isRegistering: false,
       navExpanded: false,
       acctType: "",
+      use_dark_mode: false,
     }
   }
 
@@ -72,6 +73,7 @@ class App extends Component {
       this.getAcctType()
       this.setState({
         appUserID: decoded.user_id,
+        use_dark_mode: decoded.use_dark_mode,
         isLoggedIn: true,
         showAuthModal: false,
       }, () => {
@@ -116,6 +118,7 @@ class App extends Component {
       logOutRequired: false,
       isRegistering: false,
       showAccountModal: false,
+      use_dark_mode: false,
     })
   }
 
@@ -259,6 +262,10 @@ class App extends Component {
     this.setState({ userErrorDescription: e.target.value })
   }
 
+  updateDarkMode = (use_dark_mode) => {
+    this.setState({ use_dark_mode: use_dark_mode })
+  }
+
   reportError = async () => {
     const token = localStorage.getItem('token');
     let errorData = {
@@ -285,6 +292,21 @@ class App extends Component {
       let vw = window.innerWidth * 0.01;
       document.documentElement.style.setProperty('--vw', `${vw}px`);
     });
+    let bodyBC = ""
+    let modalBC = ""
+    let bodyTC = ""
+    if (this.state.use_dark_mode) { // use dark mode
+      bodyBC = "4c4c4c"
+      bodyTC = "f7f7f7"
+      modalBC = "4c4c4c"
+    } else { // use light mode
+      bodyBC = "f7f7f7"
+      bodyTC = "212529"
+      modalBC = "f7f7f7"
+    }
+    document.documentElement.style.setProperty('--body-background-color', `#${bodyBC}`);
+    document.documentElement.style.setProperty('--body-color', `#${bodyTC}`);
+    document.documentElement.style.setProperty('--modal-background-color', `#${modalBC}`);
     return (
       <div className="App">
         <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
@@ -399,6 +421,7 @@ class App extends Component {
                 getAcctType={this.getAcctType}
                 acctType={this.state.acctType}
                 setLoggedOut={this.setLoggedOut}
+                updateDarkMode={this.updateDarkMode}
               />
             </Modal.Body>
           </Modal>

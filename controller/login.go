@@ -82,7 +82,7 @@ func (s *Server) handleLogin(user model.AppUser) LoginResult {
 		return result
 	}
 	result.AccountType = acctType.Type
-	token, err := auth.CreateToken(*appUser.ID)
+	token, err := auth.CreateToken(*appUser.ID, *acctInfo.UseDarkMode)
 	if err != nil {
 		errStr := err.Error()
 		result.IsError = true
