@@ -43,16 +43,16 @@ class HomePage extends Component {
     render() {
         return (
             <div>
-                <h3 className="title-header">Welcome to Definitely Not PB</h3>
+                <h3 className="title-header">Welcome to Definitely Not PB!</h3>
                 <p><small>*For legal reasons let's say it stands for Peanut Butter :)</small></p>
                 <br />
                 <h5>Features:</h5>
                 <ul className="no-bullets">
                     <li className="mb-2">Upload photos and create albums out of them</li>
                     <li className="mb-2">View the albums in a fullscreen slideshow</li>
-                    <li className="mb-2">When you delete a photo or your account it's actually deleted, no secret storing of your data/info</li>
+                    <li className="mb-2">When you delete something it's actually deleted, no secret storing of your data</li>
                     <li className="mb-2">Optimized for mobile viewing</li>
-                    <li className="mb-2">Completely free at all account types</li>
+                    <li className="mb-2">Completely free at all account types (and no ads)</li>
                     <li className="mb-2">Now with Dark Mode!</li>
                 </ul>
                 <br />
