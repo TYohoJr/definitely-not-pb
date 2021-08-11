@@ -118,4 +118,7 @@ func (s *Server) initializeRoutes() {
 	s.Router.Route("/api/account_type", func(r chi.Router) {
 		r.Get("/", m.AuthorizationMiddleware(s.AccountTypeRouter))
 	})
+	s.Router.Route("/api/health_check", func(r chi.Router) {
+		r.Get("/", m.AuthorizationMiddleware(s.HealthCheckRouter))
+	})
 }
