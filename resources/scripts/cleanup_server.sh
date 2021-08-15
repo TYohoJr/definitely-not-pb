@@ -10,7 +10,7 @@ if [[ "$IS_RUNNING" != "" ]]; then
 fi
 
 # copy maintenance page out of project folder
-mkdir /app/maintenance
+mkdir -p /app/maintenance
 \cp /app/definitely-not-pb/resources/maintenance/index.html /app/maintenance/index.html
 \cp /app/definitely-not-pb/resources/maintenance/favicon.ico /app/maintenance/favicon.ico
 
