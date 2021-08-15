@@ -3,10 +3,17 @@ set -e
 
 cd /app/definitely-not-pb
 
+# if application is running then stop it
 IS_RUNNING=`docker-compose ps -q app`
 if [[ "$IS_RUNNING" != "" ]]; then
 	docker-compose down
     docker system prune -a -f
+fi
+
+# if maintenance page is running then stop it
+IS_RUNNING=`docker ps -q`
+if [[ "$IS_RUNNING" != "" ]]; then
+    docker stop maintenance
 fi
 
 # copy maintenance page out of project folder
