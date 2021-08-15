@@ -41,14 +41,11 @@ class App extends Component {
 
   componentDidMount() {
     if (process.env) {
-      console.log(process.env)
       if (process.env.REACT_APP_COMMIT_HASH && process.env.REACT_APP_COMMIT_HASH.length > 7) {
         let commit_hash = process.env.REACT_APP_COMMIT_HASH
         commit_hash = commit_hash.substring(0, 7)
         this.setState({
           commit_hash: commit_hash
-        }, () => {
-          console.log("set commit hash", this.state.commit_hash)
         })
       }
       if (process.env.REACT_APP_COPY_YEAR) {
@@ -60,8 +57,6 @@ class App extends Component {
         let copy_year = new Date().getFullYear().toString()
         this.setState({
           copy_year: copy_year
-        }, () => {
-          console.log("set copy year", this.state.copy_year)
         })
       }
     }
