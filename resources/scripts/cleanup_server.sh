@@ -11,8 +11,8 @@ fi
 
 # copy maintenance page out of project folder
 mkdir /app/maintenance
-\cp /app/definitely-not-pb/maintenance/index.html /app/maintenance/index.html
-\cp /app/definitely-not-pb/maintenance/favicon.ico /app/maintenance/favicon.ico
+\cp /app/definitely-not-pb/resources/maintenance/index.html /app/maintenance/index.html
+\cp /app/definitely-not-pb/resources/maintenance/favicon.ico /app/maintenance/favicon.ico
 
 # display maintenance page while app is down
 docker run -it --rm -d -p 80:80 --name maintenance -v /app/maintenance:/usr/share/nginx/html nginx:1.19.6
