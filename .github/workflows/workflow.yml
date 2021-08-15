@@ -29,7 +29,7 @@ jobs:
       - name: Build react app
         run: |
           echo "build react app"
-          cd cd view
+          cd view
           npm install
           npm run build
   continuous-deployment:
