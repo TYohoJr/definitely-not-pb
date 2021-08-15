@@ -44,7 +44,7 @@ jobs:
           echo "Zip the code"
           mkdir artifact
           echo ${{ github.sha }} > commit_hash
-          zip -r def-not-pb-code.zip def_not_pb view/build/* docker-compose.yml resources/* appspec.yml resources/docker/* resources/maintenance/* resources/nginx/* resources/scipts/* resources/sql/* commit_hash
+          zip -r def-not-pb-code.zip def_not_pb view/build/* docker-compose.yml resources/* appspec.yml resources/maintenance/* resources/nginx/* resources/scipts/* resources/sql/* commit_hash
       # Step 7
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1

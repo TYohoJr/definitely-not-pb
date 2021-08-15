@@ -9,9 +9,6 @@ services:
       - ./resources/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./resources/sql/test-data.sql:/docker-entrypoint-initdb.d/02-test-data.sql
   app:
-    # build:
-    #   context: .
-    #   dockerfile: resources/docker/Dockerfile.app
     image: golang:1.15
     environment: 
       - GOPATH='/go'
@@ -30,9 +27,6 @@ services:
     ports:
       - "8080:8080"
   web:
-    # build:
-    #   context: .
-    #   dockerfile: resources/docker/Dockerfile.web
     image: nginx:1.19.6
     environment: 
       - HTTPS_METHOD=noredirect

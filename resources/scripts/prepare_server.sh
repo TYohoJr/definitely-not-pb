@@ -67,4 +67,8 @@ ENVIRONMENT=`echo $ENVIRONMENT | sed -e 's/^"//' -e 's/"$//'`
 ENVIRONMENT="ENVIRONMENT=${ENVIRONMENT}"
 echo $ENVIRONMENT >> .env
 
+docker pull postgres:13.1
+docker pull golang:1.15
+docker pull nginx:1.19.6
+
 echo Server prepared
