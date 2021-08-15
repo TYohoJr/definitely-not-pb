@@ -481,7 +481,7 @@ class AuthPage extends Component {
                                         </Button>
                                         <div className="reset-pass-container">
                                             <a
-                                                href="#"
+                                                href="javascript:void(0);"
                                                 onClick={() => this.setState({ isResetPassowrd: true })}
                                             >Forgot Password</a>
                                         </div>
