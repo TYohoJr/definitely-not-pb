@@ -1,0 +1,32 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /app/definitely-not-pb/
+permissions:
+  - object: /app/definitely-not-pb/resources/scripts/stop_app.sh
+    mode: 755
+  - object: /app/definitely-not-pb/resources/scripts/cleanup_server.sh
+    mode: 755
+  - object: /app/definitely-not-pb/resources/scripts/prepare_server.sh
+    mode: 755
+  - object: /app/definitely-not-pb/resources/scripts/start_app.sh
+    mode: 755
+  - object: /app/definitely-not-pb/resources/scripts/validate_app.sh
+    mode: 755
+hooks:
+  ApplicationStop:
+    - location: resources/scripts/stop_app.sh
+      runas: root
+  BeforeInstall:
+    - location: resources/scripts/cleanup_server.sh
+      runas: root
+  AfterInstall:
+    - location: resources/scripts/prepare_server.sh
+      runas: root
+  ApplicationStart:
+    - location: resources/scripts/start_app.sh
+      runas: root
+  ValidateService:
+    - location: resources/scripts/validate_app.sh
+      runas: root

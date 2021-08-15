@@ -12,7 +12,8 @@ services:
     build:
       context: .
       dockerfile: resources/docker/Dockerfile.app
-    command: ["/bin/bash", "-c", "go run main.go"]
+    # command: ["/bin/bash", "-c", "go run main.go"]
+      command: ["/bin/bash", "-c", "./def_not_pb"]
     links:
       - "db:db"
     expose:

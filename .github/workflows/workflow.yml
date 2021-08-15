@@ -1,0 +1,55 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches: [main]
+jobs:
+  continuous-integration:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1
+      - uses: actions/checkout@v2
+      # Step 2
+      - name: Set up Go 1.15
+        uses: actions/setup-go@v2.1.3
+        with:
+          go-version: 1.15
+      # Step 3
+      - name: Build go binary
+        run: |
+          echo "build go binary"
+          GO111MODULE=on
+          go install
+          go build -o def_not_pb
+      # Step 4
+      - name: Set up Node env
+        uses: actions/setup-node@v2.4.0
+        with:
+          node-version: 10.16.0
+      # Step 5
+      - name: Build react app
+        run: |
+          echo "build react app"
+          cd cd view
+          npm install
+          npm run build
+  continuous-deployment:
+    runs-on: ubuntu-latest
+    needs: [continuous-integration]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      # Step 1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      # Step 2
+      - name: Create CodeDeploy Deployment
+        id: deploy
+        run: |
+          aws deploy create-deployment \
+            --application-name definitely-not-pb-deploy-app \
+            --deployment-group-name definitely-not-pb-deploy-group \
+            --deployment-config-name CodeDeployDefault.OneAtATime \
+            --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
