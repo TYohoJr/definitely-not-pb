@@ -6,10 +6,4 @@ ENV PORT=8080
 
 WORKDIR $GOPATH/src/app
 
-# COPY controller/ ./controller
-# COPY model/ ./model
-# COPY go.* ./
-# COPY main.go ./
-# COPY .env ./
 RUN chmod +x def_not_pb
-# CMD ["/bin/bash", "-c", "go run main.go"]
