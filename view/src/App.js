@@ -242,6 +242,9 @@ class App extends Component {
     if (msgStr.includes("email already")) { // error is about an email already being in use, just display
       isUnknown = false
     }
+    if (msgStr.includes("email not found") || msgStr.includes("incorrect code") || msgStr.includes("code is expired")) { // error is about an issue when trying to reset a password, just display
+      isUnknown = false
+    }
     this.setState({ errorMsg: msgStr, errorHeader: errorHeader, showError: true, isUnknownError: isUnknown })
   }
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"defnotpb/model"
 
@@ -55,6 +56,10 @@ func (s *Server) UserRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleCreateNewUser(user model.AppUser) LoginResult {
+	usernameLow := strings.ToLower(*user.Username)
+	user.Username = &usernameLow
+	secQuestLow := strings.ToLower(*user.SecretQuestionAnswer)
+	user.SecretQuestionAnswer = &secQuestLow
 	result := LoginResult{
 		IsError: false,
 	}

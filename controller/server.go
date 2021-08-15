@@ -58,6 +58,13 @@ func (s *Server) initializeRoutes() {
 			r.Get("/", s.UserRouter)
 		})
 	})
+	s.Router.Route("/api/health_check", func(r chi.Router) {
+		r.Get("/", s.HealthCheckRouter)
+	})
+	s.Router.Route("/api/password_reset", func(r chi.Router) {
+		r.Post("/", s.PasswordResetRouter)
+		r.Put("/", s.PasswordResetRouter)
+	})
 	s.Router.Route("/api/photo", func(r chi.Router) {
 		r.Put("/", m.AuthorizationMiddleware(s.PhotoRouter))
 		r.Route("/user/{userID}", func(r chi.Router) {
@@ -117,8 +124,5 @@ func (s *Server) initializeRoutes() {
 	})
 	s.Router.Route("/api/account_type", func(r chi.Router) {
 		r.Get("/", m.AuthorizationMiddleware(s.AccountTypeRouter))
-	})
-	s.Router.Route("/api/health_check", func(r chi.Router) {
-		r.Get("/", s.HealthCheckRouter)
 	})
 }

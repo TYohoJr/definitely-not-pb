@@ -20,6 +20,10 @@ func (u *AppUser) VerifyPassword(password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(*u.PasswordHash), []byte(password))
 }
 
+func (u *AppUser) VerifySecretQuestionAnswer(secretQuestionAns string) error {
+	return bcrypt.CompareHashAndPassword([]byte(*u.SecretQuestionAnswer), []byte(secretQuestionAns))
+}
+
 func (u *AppUser) Hash(password string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 }
@@ -73,6 +77,12 @@ func (db *DB) CreateUser(u *AppUser) error {
 	}
 	p := string(hashedPassword)
 	u.PasswordHash = &p
+	hashedSQAnswer, err := u.Hash(*u.SecretQuestionAnswer)
+	if err != nil {
+		return err
+	}
+	sq := string(hashedSQAnswer)
+	u.SecretQuestionAnswer = &sq
 	rows, err := db.NamedQuery(
 		`INSERT INTO app_user(username, secret_question_id, secret_question_answer, password_hash) 
 		VALUES (:username, :secret_question_id, :secret_question_answer, :password_hash)
@@ -94,6 +104,23 @@ func (db *DB) DeleteAccount(userID int) error {
 		WHERE id=$1`, userID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all account info from db by app_user_id: %v", err)
+	}
+	return nil
+}
+
+func (db *DB) UpdateAppUserPassword(u AppUser) error {
+	hashedPassword, err := u.Hash(*u.Password)
+	if err != nil {
+		return err
+	}
+	p := string(hashedPassword)
+	u.PasswordHash = &p
+	_, err = db.NamedQuery(
+		`UPDATE app_user
+		SET password_hash=:password_hash
+		WHERE id=:id`, u)
+	if err != nil {
+		return fmt.Errorf("failed to update app_user in db: %v", err)
 	}
 	return nil
 }

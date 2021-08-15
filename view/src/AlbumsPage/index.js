@@ -220,7 +220,7 @@ class AlbumsPage extends Component {
                             </Button>
                         </Modal.Header>
                         <Modal.Body>
-                            <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Group className="mb-3" controlId="formCreateAlbumName">
                                 <Form.Label>Album Name</Form.Label>
                                 <Form.Control
                                     type="text"

@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"defnotpb/controller/auth"
 	"defnotpb/model"
@@ -38,10 +39,11 @@ func (s *Server) LoginRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleLogin(user model.AppUser) LoginResult {
+	lowUsername := strings.ToLower(*user.Username)
 	result := LoginResult{
 		IsError: false,
 	}
-	appUser, err := s.DB.GetAppUserByUsername(*user.Username)
+	appUser, err := s.DB.GetAppUserByUsername(lowUsername)
 	if err != nil {
 		errStr := err.Error()
 		result.IsError = true

@@ -14,7 +14,7 @@ import (
 
 func (s *Server) TwoFARouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "POST":
+	case "POST": // Generate a 2fa code
 		userID, err := auth.GetAppUserID(r)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
@@ -28,7 +28,7 @@ func (s *Server) TwoFARouter(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(204)
 		w.Header().Set("Content-Type", "application/json")
 		return
-	case "PUT":
+	case "PUT": // verify a 2fa is valid
 		acctInfo := model.AccountInfo{}
 		err := json.NewDecoder(r.Body).Decode(&acctInfo)
 		if err != nil {
