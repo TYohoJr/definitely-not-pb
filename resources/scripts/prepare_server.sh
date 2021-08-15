@@ -64,7 +64,7 @@ echo $EMAIL_PASSWORD >> .env
 
 ENVIRONMENT=`aws ssm get-parameter --region us-east-2 --name /def-not-pb/ENVIRONMENT --query Parameter.Value`
 ENVIRONMENT=`echo $ENVIRONMENT | sed -e 's/^"//' -e 's/"$//'`
-ENVIRONMENT="DB_SSL_MODE=${ENVIRONMENT}"
+ENVIRONMENT="ENVIRONMENT=${ENVIRONMENT}"
 echo $ENVIRONMENT >> .env
 
 echo Server prepared
