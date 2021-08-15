@@ -38,6 +38,7 @@ class App extends Component {
   }
 
   componentDidMount() {
+    console.log(process.env)
     this.setState({
       showAuthModal: false,
       showAccountModal: false,
