@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 cd /app/definitely-not-pb
 
@@ -14,6 +15,7 @@ mkdir /app/maintenance
 \cp /app/definitely-not-pb/maintenance/favicon.ico /app/maintenance/favicon.ico
 
 # display maintenance page while app is down
+docker run -it --rm -d -p 80:80 --name maintenance -v /app/maintenance:/usr/share/nginx/html nginx:1.19.6
 docker run -it --rm -d -p 80:80 --name maintenance -v /app/maintenance:/usr/share/nginx/html nginx:1.19.6
 
 cd /app

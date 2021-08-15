@@ -14,6 +14,10 @@ permissions:
     mode: 755
   - object: /app/definitely-not-pb/resources/scripts/validate_app.sh
     mode: 755
+  - object: /app/definitely-not-pb/resources/maintenance/index.html
+    mode: 755
+  - object: /app/definitely-not-pb/resources/maintenance/favicon.ico
+    mode: 755    
 hooks:
   ApplicationStop:
     - location: resources/scripts/stop_app.sh

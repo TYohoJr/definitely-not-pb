@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 cd /app/definitely-not-pb
 
