@@ -7,5 +7,6 @@ ENV PORT=8080
 WORKDIR $GOPATH/src/app
 
 COPY def_not_pb ./
+COPY .env ./
 
 RUN chmod +x def_not_pb
