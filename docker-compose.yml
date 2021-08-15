@@ -20,9 +20,9 @@ services:
     volumes:
       - ./def_not_pb:/go/src/app/def_not_pb
       - ./.env:/go/src/app/.env
-    command:
-      - chmod +x def_not_pb
-      - bash -c './def_not_pb'
+    command: >
+      bash -c "chmod +x /go/src/app/def_not_pb
+      && /go/src/app/def_not_pb"
     links:
       - "db:db"
     expose:
@@ -46,10 +46,10 @@ services:
     volumes:
       - ./view/build:/usr/share/nginx/html
       - ./resources/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-    command: 
-      - chgrp nginx /var/cache/nginx/
-      - chmod -R g+w /var/cache/nginx/
-      - sed --regexp-extended --in-place=.bak 's%^pid\s+/var/run/nginx.pid;%pid /var/tmp/nginx.pid;%' /etc/nginx/nginx.conf
-      - chgrp nginx  /usr/share/nginx/html
-      - chmod -R g+w  /usr/share/nginx/html
-      - bash -c nginx -g \"daemon off;\"
+    command: >
+      bash -c "chgrp nginx /var/cache/nginx/
+      && chmod -R g+w /var/cache/nginx/
+      && sed --regexp-extended --in-place=.bak 's%^pid\s+/var/run/nginx.pid;%pid /var/tmp/nginx.pid;%' /etc/nginx/nginx.conf
+      && chgrp nginx  /usr/share/nginx/html
+      && chmod -R g+w  /usr/share/nginx/html
+      && nginx -g \"daemon off;\""
