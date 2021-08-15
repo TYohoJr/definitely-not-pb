@@ -9,11 +9,20 @@ services:
       - ./resources/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./resources/sql/test-data.sql:/docker-entrypoint-initdb.d/02-test-data.sql
   app:
-    build:
-      context: .
-      dockerfile: resources/docker/Dockerfile.app
-    # command: ["/bin/bash", "-c", "go run main.go"]
-    command: bash -c './def_not_pb'
+    # build:
+    #   context: .
+    #   dockerfile: resources/docker/Dockerfile.app
+    image: golang:1.15
+    environment: 
+      - GOPATH='/go'
+      - GO111MODULE=on
+    working_dir: /go/src/app
+    volumes:
+      - ./def_not_pb:/go/src/app/def_not_pb
+      - ./.env:/go/src/app/.env
+    command:
+      - chmod +x def_not_pb
+      - bash -c './def_not_pb'
     links:
       - "db:db"
     expose:
@@ -21,9 +30,13 @@ services:
     ports:
       - "8080:8080"
   web:
-    build:
-      context: .
-      dockerfile: resources/docker/Dockerfile.web
+    # build:
+    #   context: .
+    #   dockerfile: resources/docker/Dockerfile.web
+    image: nginx:1.19.6
+    environment: 
+      - HTTPS_METHOD=noredirect
+    working_dir: /usr/share/nginx/html
     links:
       - "app:app"
     ports:
@@ -33,4 +46,10 @@ services:
     volumes:
       - ./view/build:/usr/share/nginx/html
       - ./resources/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-    command: ["/bin/bash", "-c", "nginx -g \"daemon off;\""]
+    command: 
+      - chgrp nginx /var/cache/nginx/
+      - chmod -R g+w /var/cache/nginx/
+      - sed --regexp-extended --in-place=.bak 's%^pid\s+/var/run/nginx.pid;%pid /var/tmp/nginx.pid;%' /etc/nginx/nginx.conf
+      - chgrp nginx  /usr/share/nginx/html
+      - chmod -R g+w  /usr/share/nginx/html
+      - bash -c nginx -g \"daemon off;\"
