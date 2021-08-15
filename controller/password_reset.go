@@ -52,12 +52,18 @@ func (s *Server) PasswordResetRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleRequestPassword2FA(acctInfo model.AccountInfo) error {
+	if acctInfo.Email == nil {
+		return errors.New("email not found")
+	}
 	currAcctInfo, err := s.DB.GetAccountInfoByUserEmail(strings.ToLower(*acctInfo.Email))
 	if err != nil {
 		return err
 	}
 	if currAcctInfo == nil {
 		return errors.New("email not found")
+	}
+	if currAcctInfo.AppUserID == nil {
+		return errors.New("failed to request 2FA code, malformed account")
 	}
 	err = s.handleCreateNewTwoFA(*currAcctInfo.AppUserID)
 	if err != nil {
@@ -67,6 +73,9 @@ func (s *Server) handleRequestPassword2FA(acctInfo model.AccountInfo) error {
 }
 
 func (s *Server) handleResetPassword(resetInfo PasswordResetDetails) error {
+	if resetInfo.Email == nil {
+		return errors.New("email not found")
+	}
 	acctInfo, err := s.DB.GetAccountInfoByUserEmail(strings.ToLower(*resetInfo.Email))
 	if err != nil {
 		return err
@@ -74,9 +83,15 @@ func (s *Server) handleResetPassword(resetInfo PasswordResetDetails) error {
 	if acctInfo == nil {
 		return errors.New("email not found")
 	}
+	if acctInfo.AppUserID == nil {
+		return errors.New("failed to request 2FA code, malformed account")
+	}
 	appUser, err := s.DB.GetAppUserByID(*acctInfo.AppUserID)
 	if err != nil {
 		return err
+	}
+	if appUser == nil {
+		return errors.New("failed to request 2FA code, malformed account")
 	}
 	acctInfo.TwoFACode = resetInfo.TwoFACode
 	err = s.handleVerifyTwoFAByEmail(*acctInfo)
@@ -92,6 +107,12 @@ func (s *Server) handleResetPassword(resetInfo PasswordResetDetails) error {
 }
 
 func (s *Server) handleVerifyTwoFAByEmail(acctInfo model.AccountInfo) error {
+	if acctInfo.Email == nil {
+		return errors.New("email not found")
+	}
+	if acctInfo.TwoFACode == nil {
+		return errors.New("incorrect code")
+	}
 	ai, err := s.DB.GetAccountInfoByUserEmail(strings.ToLower(*acctInfo.Email))
 	if err != nil {
 		return err

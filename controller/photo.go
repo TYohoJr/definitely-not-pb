@@ -170,6 +170,10 @@ func (s *Server) PhotoDownloadRouter(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("failed to download photo: %v", err.Error()), 500)
 			return
 		}
+		if fileName == nil || fileType == nil {
+			http.Error(w, "failed to download photo: failed to valid file", 500)
+			return
+		}
 		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", *fileName))
 		w.Header().Set("Content-Type", *fileType)
 		w.WriteHeader(200)
@@ -186,6 +190,9 @@ func (s *Server) handleCreateNewPhoto(photo model.Photo, userID int) error {
 	}
 	if acctInfo == nil {
 		return errors.New("failed to find account info")
+	}
+	if photo.Name == nil || photo.AppUserID == nil || photo.FileType == nil {
+		return errors.New("failed to get info of uploaded photo")
 	}
 	file, err := os.Open(*photo.Name)
 	if err != nil {
@@ -237,14 +244,23 @@ func (s *Server) handleGetPhotosByUserID(userID int) ([]model.Photo, error) {
 	if acctInfo == nil {
 		return nil, errors.New("failed to retrieve account info")
 	}
+	if acctInfo.AccountTypeID == nil {
+		return nil, errors.New("failed to get photos, malformed account info")
+	}
 	acctType, err := s.DB.GetAccountTypeByID(*acctInfo.AccountTypeID)
 	if err != nil {
 		return nil, err
+	}
+	if acctType == nil || acctType.Type == nil {
+		return nil, errors.New("failed to get photos, malformed account info")
 	}
 	if *acctType.Type == defaultAcctType {
 		defaultAppUser, err := s.DB.GetAppUserByUsername(defaultAcctTypeUsername)
 		if err != nil {
 			return nil, err
+		}
+		if defaultAppUser == nil || defaultAppUser.ID == nil {
+			return nil, errors.New("failed to get photos, failed to retrieve default account info")
 		}
 		userID = *defaultAppUser.ID
 	}
@@ -268,7 +284,10 @@ func (s *Server) handleDownloadPhoto(photoID int, userID int) (io.ReadCloser, *s
 		return nil, nil, nil, err
 	}
 	if photo == nil {
-		return nil, nil, nil, errors.New("failed to download photo")
+		return nil, nil, nil, errors.New("failed to download photo, failed to find photo")
+	}
+	if photo.Size == nil || photo.S3Bucket == nil || photo.S3Key == nil {
+		return nil, nil, nil, errors.New("failed to download photo, malformed photo entry")
 	}
 	err = s.handleDownloadLimit(*acctInfo, *photo.Size)
 	if err != nil {
@@ -296,6 +315,12 @@ func (s *Server) handleGetPhotoByID(photoID int) (*string, error) {
 	photo, err := s.DB.GetPhotoByID(photoID)
 	if err != nil {
 		return nil, err
+	}
+	if photo == nil {
+		return nil, errors.New("failed to get photo, failed to find photo")
+	}
+	if photo.S3Bucket == nil || photo.S3Key == nil {
+		return nil, errors.New("failed to get photo, malformed photo entry")
 	}
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion)},
@@ -329,6 +354,9 @@ func (s *Server) handleDeletePhotoByID(photoID int) error {
 	photo, err := s.DB.GetPhotoByID(photoID)
 	if err != nil {
 		return err
+	}
+	if photo.S3Bucket == nil || photo.S3Key == nil {
+		return errors.New("failed to delete photo, malformed photo entry")
 	}
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
@@ -388,6 +416,9 @@ func (s *Server) verifyContentType(contentType string) error {
 }
 
 func (s *Server) handleUploadLimit(acctInfo model.AccountInfo, uploadAmt int64) error {
+	if acctInfo.ID == nil || acctInfo.AccountTypeID == nil {
+		return errors.New("failed to update monthly upload amount, malformed account info")
+	}
 	dataUsage := model.AccountDataUsage{}
 	currUsage, err := s.DB.GetAccountDataUsageByAccountInfoIDAndCurrentMonth(*acctInfo.ID)
 	if err != nil {
@@ -407,6 +438,9 @@ func (s *Server) handleUploadLimit(acctInfo model.AccountInfo, uploadAmt int64) 
 	if err != nil {
 		return err
 	}
+	if dataUsage.ID == nil || dataUsage.UploadAmount == nil || dataLimit.UploadLimit == nil {
+		return errors.New("failed to update monthly upload amount, unknown error in database calculation")
+	}
 	plannedUsage := *dataUsage.UploadAmount + uploadAmt
 	if plannedUsage > *dataLimit.UploadLimit {
 		return errors.New("reached monthly upload limit")
@@ -419,6 +453,9 @@ func (s *Server) handleUploadLimit(acctInfo model.AccountInfo, uploadAmt int64) 
 }
 
 func (s *Server) handleDownloadLimit(acctInfo model.AccountInfo, downloadAmt int64) error {
+	if acctInfo.ID == nil || acctInfo.AccountTypeID == nil {
+		return errors.New("failed to update monthly download amount, malformed account info")
+	}
 	dataUsage := model.AccountDataUsage{}
 	currUsage, err := s.DB.GetAccountDataUsageByAccountInfoIDAndCurrentMonth(*acctInfo.ID)
 	if err != nil {
@@ -437,6 +474,9 @@ func (s *Server) handleDownloadLimit(acctInfo model.AccountInfo, downloadAmt int
 	dataLimit, err := s.DB.GetAccountTypeLimitByTypeID(*acctInfo.AccountTypeID)
 	if err != nil {
 		return err
+	}
+	if dataUsage.ID == nil || dataUsage.DownloadAmount == nil || dataLimit.DownloadLimit == nil {
+		return errors.New("failed to update monthly download amount, unknown error in database calculation")
 	}
 	plannedUsage := *dataUsage.DownloadAmount + downloadAmt
 	if plannedUsage > *dataLimit.DownloadLimit {

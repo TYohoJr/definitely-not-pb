@@ -42,9 +42,15 @@ func (s *Server) handleGetAcctTypeByUser(userID int) (*model.AccountType, error)
 	if acctInfo == nil {
 		return nil, errors.New("failed to get account info")
 	}
+	if acctInfo.AccountTypeID == nil {
+		return nil, errors.New("failed to get account type from account info")
+	}
 	acctType, err := s.DB.GetAccountTypeByID(*acctInfo.AccountTypeID)
 	if err != nil {
 		return nil, err
+	}
+	if acctType == nil {
+		return nil, errors.New("failed to get account type")
 	}
 	return acctType, nil
 }

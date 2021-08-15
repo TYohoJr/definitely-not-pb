@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
@@ -17,10 +18,16 @@ type AppUser struct {
 }
 
 func (u *AppUser) VerifyPassword(password string) error {
+	if u.PasswordHash == nil {
+		return errors.New("failed to retrieve password hash from database")
+	}
 	return bcrypt.CompareHashAndPassword([]byte(*u.PasswordHash), []byte(password))
 }
 
 func (u *AppUser) VerifySecretQuestionAnswer(secretQuestionAns string) error {
+	if u.PasswordHash == nil {
+		return errors.New("failed to retrieve secret question answer hash from database")
+	}
 	return bcrypt.CompareHashAndPassword([]byte(*u.SecretQuestionAnswer), []byte(secretQuestionAns))
 }
 
@@ -71,6 +78,12 @@ func (db *DB) GetAppUserByID(userID int) (*AppUser, error) {
 }
 
 func (db *DB) CreateUser(u *AppUser) error {
+	if u.Password == nil {
+		return errors.New("failed to retrieve password hash from database")
+	}
+	if u.SecretQuestionAnswer == nil {
+		return errors.New("failed to retrieve secret question answer hash from database")
+	}
 	hashedPassword, err := u.Hash(*u.Password)
 	if err != nil {
 		return err
@@ -109,6 +122,9 @@ func (db *DB) DeleteAccount(userID int) error {
 }
 
 func (db *DB) UpdateAppUserPassword(u AppUser) error {
+	if u.Password == nil {
+		return errors.New("failed to retrieve password hash from database")
+	}
 	hashedPassword, err := u.Hash(*u.Password)
 	if err != nil {
 		return err

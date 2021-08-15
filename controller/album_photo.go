@@ -82,6 +82,9 @@ func (s *Server) handleCreateNewAlbumPhoto(albumPhoto model.AlbumPhoto) error {
 }
 
 func (s *Server) handleDeleteAlbumPhoto(albumPhoto model.AlbumPhoto) error {
+	if albumPhoto.AlbumID == nil || albumPhoto.PhotoID == nil {
+		return errors.New("failed to find album_photo")
+	}
 	ap, err := s.DB.GetAlbumPhotoByPhotoAndAlbumID(*albumPhoto.AlbumID, *albumPhoto.PhotoID)
 	if err != nil {
 		return err
@@ -89,7 +92,10 @@ func (s *Server) handleDeleteAlbumPhoto(albumPhoto model.AlbumPhoto) error {
 	if ap == nil {
 		return errors.New("failed to find album_photo")
 	}
-	err = s.DB.DeleteAlbumPhotoByPhotoAndAlbumID(*albumPhoto.AlbumID, *albumPhoto.PhotoID)
+	if ap.AlbumID == nil || ap.PhotoID == nil {
+		return errors.New("failed to delete album_photo")
+	}
+	err = s.DB.DeleteAlbumPhotoByPhotoAndAlbumID(*ap.AlbumID, *ap.PhotoID)
 	if err != nil {
 		return err
 	}

@@ -164,6 +164,9 @@ func (s *Server) handleDeleteAlbum(albumID int) error {
 		return err
 	}
 	for _, ap := range albumPhotos {
+		if ap.ID == nil {
+			continue
+		}
 		err = s.DB.DeleteAlbumPhotoByID(*ap.ID)
 		if err != nil {
 			return err
@@ -183,6 +186,9 @@ func (s *Server) handleGetAlbumsByPhotoID(photoID int) ([]model.Album, error) {
 	}
 	albums := []model.Album{}
 	for _, ap := range albumPhotos {
+		if ap.AlbumID == nil {
+			continue
+		}
 		album, err := s.DB.GetAlbumByID(*ap.AlbumID)
 		if err != nil {
 			return nil, err

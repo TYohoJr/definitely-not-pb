@@ -39,10 +39,22 @@ func (s *Server) LoginRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleLogin(user model.AppUser) LoginResult {
-	lowUsername := strings.ToLower(*user.Username)
 	result := LoginResult{
 		IsError: false,
 	}
+	if user.Username == nil {
+		errStr := "Incorrect username/password"
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
+	if user.Password == nil {
+		errStr := "Incorrect username/password"
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
+	lowUsername := strings.ToLower(*user.Username)
 	appUser, err := s.DB.GetAppUserByUsername(lowUsername)
 	if err != nil {
 		errStr := err.Error()
@@ -72,6 +84,12 @@ func (s *Server) handleLogin(user model.AppUser) LoginResult {
 	}
 	if acctInfo == nil {
 		errStr := "Incorrect username/password"
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
+	if acctInfo.AccountTypeID == nil || acctInfo.UseDarkMode == nil {
+		errStr := "Failed to login, malformed account info"
 		result.IsError = true
 		result.ErrorMessage = &errStr
 		return result

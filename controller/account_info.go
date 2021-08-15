@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -160,6 +159,9 @@ func (s *Server) handledeleteAccount(userID int) error {
 		return err
 	}
 	for _, p := range photos {
+		if p.S3Bucket == nil || p.S3Key == nil {
+			continue
+		}
 		deletePhotoFromS3(*p.S3Bucket, *p.S3Key)
 	}
 	err = s.DB.DeleteAccount(userID)
@@ -174,7 +176,6 @@ func deletePhotoFromS3(bucketName string, objKey string) {
 		Region: aws.String(awsRegion),
 	})
 	if err != nil {
-		log.Fatal(fmt.Errorf("failed to delete photo from S3 on account deletion: failed to create session: %v", err))
 		return
 	}
 	svc := s3.New(sess)
@@ -184,7 +185,6 @@ func deletePhotoFromS3(bucketName string, objKey string) {
 	}
 	_, err = svc.DeleteObject(input)
 	if err != nil {
-		log.Fatal(fmt.Errorf("failed to delete photo from S3 on account deletion: failed to delete object: %v", err))
 		return
 	}
 }

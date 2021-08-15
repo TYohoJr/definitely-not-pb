@@ -56,13 +56,19 @@ func (s *Server) UserRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleCreateNewUser(user model.AppUser) LoginResult {
+	result := LoginResult{
+		IsError: false,
+	}
+	if user.Username == nil || user.SecretQuestionAnswer == nil {
+		errStr := "invalid request data"
+		result.IsError = true
+		result.ErrorMessage = &errStr
+		return result
+	}
 	usernameLow := strings.ToLower(*user.Username)
 	user.Username = &usernameLow
 	secQuestLow := strings.ToLower(*user.SecretQuestionAnswer)
 	user.SecretQuestionAnswer = &secQuestLow
-	result := LoginResult{
-		IsError: false,
-	}
 	err := s.validateNewUser(user)
 	if err != nil {
 		errStr := err.Error()
