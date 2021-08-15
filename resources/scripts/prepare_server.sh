@@ -38,8 +38,8 @@ DB_USER="DB_USER=${DB_USER}"
 echo $DB_USER >> .env
 
 DB_PASSWORD=`aws ssm get-parameter --region us-east-2 --name /def-not-pb/DB_PASSWORD --with-decryption --query Parameter.Value`
-DB_PASSWORD=`echo $DB_PASSWORD | sed -e 's/^"//' -e 's/"$//'`
-DB_PASSWORD="DB_PASSWORD='${DB_PASSWORD}'"
+DB_PASSWORD=`echo $DB_PASSWORD | sed -e 's/^"//' -e 's/"//'`
+DB_PASSWORD="DB_PASSWORD=${DB_PASSWORD}"
 echo $DB_PASSWORD >> .env
 
 DB_NAME=`aws ssm get-parameter --region us-east-2 --name /def-not-pb/DB_NAME --query Parameter.Value`
