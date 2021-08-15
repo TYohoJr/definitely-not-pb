@@ -26,7 +26,6 @@ jobs:
         uses: actions/setup-node@v2.4.0
         with:
           node-version: 10.16.0
-      # Step 5
       - name: Build react app
         run: |
           echo "build react app"
