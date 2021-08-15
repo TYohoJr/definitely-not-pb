@@ -136,7 +136,7 @@ h4 {
 .copyright-footer {
   width: fit-content;
   margin: 0 auto;
-  opacity: 0.7;
+  opacity: 0.5;
   background: none!important;
   pointer-events: none;
 }

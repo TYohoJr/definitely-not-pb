@@ -34,10 +34,32 @@ class App extends Component {
       navExpanded: false,
       acctType: "",
       use_dark_mode: false,
+      commit_hash: "local",
+      copy_year: "2021",
     }
   }
 
   componentDidMount() {
+    if (process.env) {
+      if (process.env.REACT_APP_COMMIT_HASH && process.env.REACT_APP_COMMIT_HASH.length > 7) {
+        let commit_hash = process.env.REACT_APP_COMMIT_HASH
+        commit_hash = commit_hash.substring(0, 7)
+        this.setState({
+          commit_hash: commit_hash
+        })
+      }
+      if (process.env.REACT_APP_YEAR) {
+        let copy_year = process.env.REACT_APP_YEAR
+        this.setState({
+          copy_year: copy_year
+        })
+      } else {
+        let copy_year = new Date().getFullYear().toString()
+        this.setState({
+          copy_year: copy_year
+        })
+      }
+    }
     console.log(process.env)
     this.setState({
       showAuthModal: false,
@@ -498,7 +520,7 @@ class App extends Component {
           fixed="bottom"
           className="copyright-footer"
         >
-          <small className="text-muted">&copy; {process.env.REACT_APP_YEAR || new Date().getFullYear().toString()} Thomas Yoho</small>
+          <small>Version: {this.state.commit_hash}<br />&copy; {this.state.copy_year} Thomas Yoho</small>
         </Navbar>
       </div >
     );
