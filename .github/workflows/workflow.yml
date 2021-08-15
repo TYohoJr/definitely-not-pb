@@ -40,7 +40,6 @@ jobs:
           echo $REACT_APP_COPY_YEAR >> .env
           npm install
           npm run build
-      # Step 6
       - name: Zip the code
         run: |
           echo "Zip the code"
