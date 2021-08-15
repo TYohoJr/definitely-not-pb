@@ -36,6 +36,8 @@ jobs:
           REACT_APP_COMMIT_HASH_VAL=`cat commit_hash`
           REACT_APP_COMMIT_HASH="REACT_APP_COMMIT_HASH=${REACT_APP_COMMIT_HASH_VAL}"
           echo $REACT_APP_COMMIT_HASH >> .env
+          REACT_APP_COPY_YEAR="REACT_APP_COPY_YEAR=2021"
+          echo $REACT_APP_COPY_YEAR >> .env
           npm install
           npm run build
       # Step 6

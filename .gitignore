@@ -5,6 +5,7 @@
 *.dll
 *.so
 *.dylib
+def_not_pb
 
 # Test binary, built with `go test -c`
 *.test
